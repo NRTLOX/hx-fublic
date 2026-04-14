@@ -22,9 +22,12 @@ def get_next_free_ip():
 
 
 def generate_vm_id(user, task):
-    """Генерирует уникальный ID для VM: 1000 + user.id * 100 + task.id"""
-    return 1000 + (user.id * 100) + task.id
-
+    """
+    Генерирует уникальный ID для VM в формате: 8 + ID пользователя + ID задания
+    Пример: пользователь 7, задание 12 → 8712
+    """
+    vm_id_str = f"8{user.id}{task.id}"
+    return int(vm_id_str)
 
 @login_required
 def start_vm(request, task_id):
