@@ -23,12 +23,6 @@
         .card:hover {
             transform: translateY(-5px);
         }
-        .badge-vm {
-            background-color: #dc3545;
-        }
-        .badge-file {
-            background-color: #0d6efd;
-        }
     </style>
 </head>
 <body>
@@ -39,26 +33,57 @@
             <a class="navbar-brand" href="{% url 'home' %}">
                 <i class="bi bi-shield-lock"></i> HX CTF
             </a>
-            
-            <div class="navbar-nav ms-auto">
-                {% if user.is_authenticated %}
-                    {% if user.is_approved %}
-                        <a class="nav-link" href="{% url 'task_list' %}">
-                            <i class="bi bi-list-task"></i> Задания
-                        </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    {% if user.is_authenticated and user.is_approved %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'task_list' %}">
+                                <i class="bi bi-list-task"></i> Задания
+                            </a>
+                        </li>
                     {% endif %}
-                    
-                    <span class="navbar-text mx-3">
-                        Привет, <strong>{{ user.username }}</strong>!
-                    </span>
-                    
-                    <a class="nav-link text-danger" href="{% url 'logout' %}">
-                        <i class="bi bi-box-arrow-right"></i> Выход
-                    </a>
-                {% else %}
-                    <a class="nav-link" href="{% url 'login' %}">Вход</a>
-                    <a class="nav-link" href="{% url 'register' %}">Регистрация</a>
-                {% endif %}
+                </ul>
+
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                        {% if user.is_approved %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'profile' %}">
+                                    <i class="bi bi-person-circle"></i> Профиль
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'leaderboard' %}">
+                                    <i class="bi bi-trophy"></i> Лидерборд
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        <li class="nav-item">
+                            <span class="navbar-text mx-3">
+                                Привет, <strong>{{ user.username }}</strong>!
+                            </span>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link text-danger" href="{% url 'logout' %}">
+                                <i class="bi bi-box-arrow-right"></i> Выход
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Вход</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">Регистрация</a>
+                        </li>
+                    {% endif %}
+                </ul>
             </div>
         </div>
     </nav>
@@ -69,7 +94,7 @@
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
                     {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             {% endfor %}
         {% endif %}

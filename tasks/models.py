@@ -45,7 +45,6 @@ class Flag(models.Model):
     def __str__(self):
         return f"Флаг для {self.task.title}"
 
-
 class Submission(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Пользователь")
     task = models.ForeignKey(Task, on_delete=models.CASCADE, verbose_name="Задание")
@@ -58,6 +57,8 @@ class Submission(models.Model):
         verbose_name = "Сабмит"
         verbose_name_plural = "Сабмиты"
         ordering = ['-submitted_at']
+        # Один пользователь может сдать один флаг только один раз успешно
+        unique_together = ('user', 'flag')
 
     def __str__(self):
         return f"{self.user.username} -> {self.task.title} ({'✅' if self.is_correct else '❌'})"

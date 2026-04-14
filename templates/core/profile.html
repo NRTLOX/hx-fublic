@@ -1,0 +1,61 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Профиль — {{ user.username }}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-4">
+                        <div class="col-md-4">
+                            <h2 class="text-success fw-bold">{{ total_points }}</h2>
+                            <p class="text-muted">Набрано баллов</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h2 class="text-primary fw-bold">{{ solved_tasks_count }}</h2>
+                            <p class="text-muted">Решено заданий</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h2 class="text-info fw-bold">{{ submissions|length }}</h2>
+                            <p class="text-muted">Сдано флагов</p>
+                        </div>
+                    </div>
+
+                    <h5 class="mt-4">Последние решённые задания</h5>
+                    {% if submissions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Задание</th>
+                                    <th>Баллы</th>
+                                    <th>Дата</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sub in submissions %}
+                                <tr>
+                                    <td>{{ sub.task.title }}</td>
+                                    <td><span class="badge bg-success">{{ sub.task.points }}</span></td>
+                                    <td>{{ sub.submitted_at|date:"d.m.Y H:i" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Вы пока не решили ни одного задания.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{% url 'leaderboard' %}" class="btn btn-outline-primary">Посмотреть таблицу лидеров →</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
