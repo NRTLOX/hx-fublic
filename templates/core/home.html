@@ -3,11 +3,19 @@
 {% block content %}
 <div class="text-center mt-5">
     <h1 class="display-5">Добро пожаловать, {{ user.username }}!</h1>
-    <p class="lead">Вы успешно авторизованы и одобрены администратором.</p>
+    <p class="lead mb-4">Вы успешно авторизованы.</p>
     
     <div class="mt-4">
-        <a href="/tasks/" class="btn btn-lg btn-success me-3">Перейти к заданиям</a>
-        <a href="/admin/" class="btn btn-lg btn-outline-secondary" target="_blank">Админ-панель</a>
+        <a href="{% url 'task_list' %}" class="btn btn-lg btn-success me-3">
+            Перейти к заданиям
+        </a>
+        
+        <!-- Кнопка админки показывается ТОЛЬКО суперпользователям -->
+        {% if user.is_superuser %}
+        <a href="{% url 'admin:index' %}" class="btn btn-lg btn-outline-secondary" target="_blank">
+            Админ-панель
+        </a>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
