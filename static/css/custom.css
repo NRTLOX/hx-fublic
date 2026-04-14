@@ -1,4 +1,4 @@
-/* custom.css - Тёмная тема с фиолетовым акцентом (финальная версия) */
+/* custom.css - Тёмная тема с фиолетовым акцентом */
 
 :root {
     --bg-color: #18181b;
@@ -7,11 +7,7 @@
     --text-color: #f1f5f9;
     --text-muted: #9ca3af;
     --accent-purple: #a855f7;
-    --accent-purple-hover: #9333ea;
-    --success: #4ade80;
-    --success-soft: #22c55e;
-    --danger: #f87171;
-    --danger-soft: #ef4444;
+    --accent-purple-dark: #7c3aed;
     --border-color: #52525b;
 }
 
@@ -32,15 +28,12 @@ body {
     color: var(--text-color) !important;
 }
 
-.card-title {
-    color: #f1f5f9 !important;
+.card-header {
+    background-color: var(--accent-purple-dark) !important;
+    color: white !important;
 }
 
-.card-text {
-    color: var(--text-muted) !important;
-}
-
-/* Поля ввода флага */
+/* Поля ввода */
 .form-control {
     background-color: var(--input-bg) !important;
     color: var(--text-color) !important;
@@ -53,6 +46,34 @@ body {
     box-shadow: 0 0 0 0.3rem rgba(168, 85, 247, 0.4) !important;
 }
 
+/* Таблицы — делаем полностью тёмными */
+.table {
+    color: var(--text-color) !important;
+    background-color: var(--card-bg) !important;
+}
+
+.table thead th {
+    background-color: #1f2937 !important;
+    color: #e0e0e0 !important;
+    border-bottom: 2px solid #64748b;
+    font-weight: 500;
+}
+
+.table tbody td {
+    color: #f1f5f9 !important;
+    border-bottom: 1px solid #52525b;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #3f3f46 !important;
+    color: white !important;
+}
+
+/* Специально для лидерборда и профиля */
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #2d2d2d !important;
+}
+
 /* Блок "Машина ещё не запущена" */
 .alert-secondary, .alert-light {
     background-color: #3f3f46 !important;
@@ -60,16 +81,29 @@ body {
     border: none !important;
 }
 
-/* Бейджи типов заданий — делаем фиолетовыми */
+/* Бейджи */
 .badge.bg-primary, .badge.bg-danger {
     background-color: var(--accent-purple) !important;
-    color: white;
 }
 
-/* Более спокойные зелёный и красный */
 .badge.bg-success {
     background-color: #4ade80 !important;
     color: #111827;
+}
+
+/* Кнопки */
+.btn-primary, .btn-success {
+    background-color: var(--accent-purple);
+    border-color: var(--accent-purple);
+}
+
+.btn-primary:hover, .btn-success:hover {
+    background-color: #9333ea;
+}
+/* ==================== АЛЕРТЫ ==================== */
+
+.alert {
+    border-left: 5px solid var(--accent-purple);
 }
 
 .alert-success {
@@ -84,33 +118,14 @@ body {
     border-color: #f87171;
 }
 
-/* Таблицы */
-.table {
-    color: var(--text-color) !important;
-    background-color: var(--card-bg) !important;
+/* Главное изменение — Info-алерты в фиолетовом стиле */
+.alert-info {
+    background-color: #4c1d95 !important;
+    color: #e0bbff !important;
+    border-color: #a855f7 !important;
 }
 
-.table thead th {
-    background-color: #1f2937;
-    border-bottom: 2px solid #52525b;
-}
-
-.table-hover tbody tr:hover {
-    background-color: #3f3f46;
-}
-
-/* Кнопки */
-.btn-primary, .btn-success {
-    background-color: var(--accent-purple);
-    border-color: var(--accent-purple);
-}
-
-.btn-primary:hover, .btn-success:hover {
-    background-color: var(--accent-purple-hover);
-}
-
-/* Код */
-code {
-    background-color: #3f3f46;
-    color: #c4d0ff;
+.alert-info .alert-link {
+    color: #c4b5fd;
+    text-decoration: underline;
 }
