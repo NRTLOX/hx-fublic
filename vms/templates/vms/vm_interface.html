@@ -1,15 +1,29 @@
 {% if vm_instance and vm_instance.status == 'running' %}
-<div class="alert alert-success">
-    <h5>✅ Виртуальная машина запущена</h5>
-    <p><strong>IP-адрес:</strong> <code class="fs-5">{{ vm_instance.ip_address }}</code></p>
-    <p><strong>Осталось времени:</strong> 
-        <span id="countdown" class="fw-bold text-danger fs-5"></span>
-    </p>
+<div class="alert alert-success shadow-sm" style="background-color: #1e3a2f; border-left: 5px solid #4ade80;">
+    <h5 class="mb-3">✅ Виртуальная машина запущена</h5>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <strong>IP-адрес:</strong><br>
+            <code class="fs-5 bg-dark px-3 py-1 rounded">{{ vm_instance.ip_address }}</code>
+        </div>
+        <div class="col-md-6">
+            <strong>Осталось времени:</strong><br>
+            <span id="countdown" class="fs-4 fw-bold text-success"></span>
+        </div>
+    </div>
 </div>
 
-<div class="d-grid gap-2 d-md-flex justify-content-md-start">
-    <button onclick="resetTimer()" class="btn btn-warning btn-lg">Продлить таймер (+1 час)</button>
-    <button onclick="stopVM()" class="btn btn-danger btn-lg">Остановить машину</button>
+<div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
+    <button onclick="resetTimer()" 
+            class="btn btn-outline-warning btn-lg px-4 shadow-sm">
+        <i class="bi bi-clock-history"></i> Продлить таймер (+1 час)
+    </button>
+    
+    <button onclick="stopVM()" 
+            class="btn btn-outline-danger btn-lg px-4 shadow-sm">
+        <i class="bi bi-trash3"></i> Остановить машину
+    </button>
 </div>
 
 <script>
@@ -22,7 +36,6 @@
 
             if (distance < 0) {
                 countdownEl.innerHTML = "Время вышло!";
-                countdownEl.classList.add('text-muted');
                 return;
             }
 
@@ -37,16 +50,15 @@
         setInterval(updateTimer, 1000);
     }
 
-    // Запускаем таймер
     const expiryTimestamp = new Date("{{ vm_instance.expires_at.isoformat }}").getTime();
     startCountdown(expiryTimestamp);
 </script>
 
 {% else %}
-<div class="alert alert-secondary">
-    <p>Машина ещё не запущена. После запуска у вас будет ровно 1 час.</p>
+<div class="alert alert-secondary shadow-sm" style="background-color: #3f3f46; border: none;">
+    <p class="mb-0">Машина ещё не запущена. После запуска у вас будет 1 час работы.</p>
 </div>
-<button onclick="startVM()" class="btn btn-success btn-lg px-5">
+<button onclick="startVM()" class="btn btn-primary btn-lg px-5">
     🚀 Запустить виртуалку на 1 час
 </button>
 {% endif %}
@@ -63,7 +75,7 @@ function stopVM() {
     }
 }
 function resetTimer() {
-    if (confirm("Продлить таймер ещё на 1 час?")) {
+    if (confirm("Продлить таймер на 1 час?")) {
         window.location.href = "{% url 'vm_reset_timer' task.id %}";
     }
 }

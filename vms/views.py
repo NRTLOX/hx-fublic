@@ -82,29 +82,26 @@ def stop_vm(request, task_id):
     task = get_object_or_404(Task, id=task_id)
     vm_instance = UserVMInstance.objects.filter(user=request.user, task=task).first()
 
-    if not vm_instance:
-        messages.warning(request, "Машина не найдена.")
+    if not vm_instance or vm_instance.status != 'running':
+        messages.warning(request, "Машина не запущена.")
         return redirect('task_detail', task_id=task.id)
 
     try:
-        messages.info(request, "Останавливаем и уничтожаем виртуальную машину...")
-
         if vm_instance.proxmox_vm_id:
             proxmox_client.stop_vm(vm_instance.proxmox_vm_id)
-            time.sleep(20)                     # даём время на shutdown
+            time.sleep(8)
             proxmox_client.destroy_vm(vm_instance.proxmox_vm_id)
 
         vm_instance.status = 'destroyed'
         vm_instance.save()
 
-        messages.success(request, "✅ Машина успешно остановлена и полностью удалена.")
+        messages.success(request, "✅ Виртуальная машина успешно остановлена и удалена.")
 
     except Exception as e:
         print(f"[ERROR] stop_vm: {str(e)}")
-        messages.error(request, f"Ошибка при остановке: {str(e)}")
+        messages.error(request, "Не удалось остановить виртуальную машину. Обратитесь к администратору.")
 
     return redirect('task_detail', task_id=task.id)
-
 
 
 
