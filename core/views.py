@@ -8,12 +8,16 @@ from django.db.models import Q
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
-
 def home(request):
     if request.user.is_authenticated:
         if not request.user.is_approved:
             return render(request, 'core/not_approved.html')
-        return render(request, 'core/home.html')
+        
+        # Проверяем, есть ли уже VPN конфиг у пользователя
+        has_vpn = hasattr(request.user, 'vpn_client') and request.user.vpn_client.is_active
+        
+        return render(request, 'core/home.html', {'has_vpn': has_vpn})
+    
     return render(request, 'core/landing.html')
 
 def register_view(request):
@@ -105,3 +109,37 @@ def leaderboard(request):
         'user_rank': user_rank,
     }
     return render(request, 'core/leaderboard.html', context)
+
+
+import os
+from django.http import HttpResponse
+from django.contrib import messages
+from .models import VPNClient
+from .vpn_generator import VPNGenerator   # создадим этот файл ниже
+
+@login_required
+def download_vpn_config(request):
+    if not request.user.is_approved:
+        messages.error(request, "Ваш аккаунт ещё не одобрен.")
+        return redirect('home')
+
+    try:
+        config = VPNGenerator.generate_ovpn_config(request.user)
+        
+        if not config:
+            messages.error(request, "Не удалось сгенерировать VPN конфиг.")
+            return redirect('home')
+
+        # Имя файла для скачивания
+        filename = f"{request.user.username}_hxctf.ovpn"
+
+        response = HttpResponse(config, content_type='text/plain')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        messages.success(request, "VPN конфиг успешно сгенерирован и скачивается...")
+        return response
+
+    except Exception as e:
+        print(f"[VPN Error] {e}")
+        messages.error(request, "Произошла ошибка при генерации VPN конфига. Обратитесь к администратору.")
+        return redirect('home')
