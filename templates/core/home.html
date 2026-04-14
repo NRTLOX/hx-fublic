@@ -3,19 +3,27 @@
 {% block content %}
 <div class="text-center mt-5">
     <h1 class="display-5">Добро пожаловать, {{ user.username }}!</h1>
-    <p class="lead mb-4">Вы успешно авторизованы.</p>
+    <p class="lead mb-4">Вы успешно авторизованы и одобрены администратором.</p>
     
     <div class="mt-4">
-        <a href="{% url 'task_list' %}" class="btn btn-lg btn-success me-3">
+        <a href="{% url 'task_list' %}" class="btn btn-lg btn-primary me-3">
             Перейти к заданиям
         </a>
         
-        <!-- Кнопка админки показывается ТОЛЬКО суперпользователям -->
         {% if user.is_superuser %}
         <a href="{% url 'admin:index' %}" class="btn btn-lg btn-outline-secondary" target="_blank">
             Админ-панель
         </a>
         {% endif %}
     </div>
+
+    <!-- Кнопка Скачать VPN — снизу посередине, фиолетовая -->
+    <div class="mt-5">
+        <a href="{% url 'download_vpn_config' %}" class="btn btn-lg btn-primary px-5 py-3 shadow-sm">
+            <i class="bi bi-download"></i> Скачать VPN конфиг
+        </a>
+    </div>
+
+    <p class="text-muted mt-3">Подключитесь через OpenVPN, чтобы получить доступ к виртуальным машинам</p>
 </div>
 {% endblock %}
