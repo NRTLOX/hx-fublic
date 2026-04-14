@@ -1,0 +1,84 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+
+            <!-- Заголовок задания -->
+            <div class="card shadow mb-4">
+                <div class="card-header text-white {% if task.task_type == 'file' %}bg-primary{% else %}bg-danger{% endif %}">
+                    <h3 class="mb-0">{{ task.title }}</h3>
+                </div>
+                
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Тип:</strong> {{ task.get_task_type_display }}
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <strong>Баллы:</strong> <span class="badge bg-success fs-6">{{ task.points }}</span>
+                        </div>
+                    </div>
+
+                    <h5 class="mt-3">Описание задания:</h5>
+                    <p class="lead">{{ task.description }}</p>
+
+                    <!-- ==================== ФАЙЛОВОЕ ЗАДАНИЕ ==================== -->
+                    {% if task.task_type == 'file' %}
+                    {% if task.file %}
+                    <div class="mt-4 p-4 border rounded bg-light">
+                        <h5>Скачать файл:</h5>
+                        <a href="{{ task.file.url }}" class="btn btn-primary btn-lg" download>
+                            ⬇️ Скачать файл задания
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+
+                    <!-- ==================== VM ЗАДАНИЕ ==================== -->
+                    {% if task.task_type == 'vm' %}
+                    <div id="vm-section">
+                        {% include 'vms/vm_interface.html' %}
+                    </div>
+                    {% endif %}
+
+                    <!-- ==================== СДАЧА ФЛАГОВ ==================== -->
+                    <div class="mt-5">
+                        <h5>Сдать флаги</h5>
+                        {% for flag in task.flags.all %}
+                        <div class="mb-4 p-3 border rounded">
+                            {% if flag.hint %}
+                            <div class="alert alert-info py-2">
+                                <strong>Подсказка:</strong> {{ flag.hint }}
+                            </div>
+                            {% endif %}
+                            
+                            <form method="POST" action="{% url 'submit_flag' task.id %}">
+                                {% csrf_token %}
+                                <div class="input-group">
+                                    <input type="text" 
+                                           name="flag" 
+                                           class="form-control form-control-lg"
+                                           placeholder="flag{...}"
+                                           required>
+                                    <input type="hidden" name="flag_id" value="{{ flag.id }}">
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        Отправить
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <a href="{% url 'task_list' %}" class="btn btn-secondary">← Назад к списку заданий</a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

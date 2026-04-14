@@ -1,0 +1,70 @@
+{% if vm_instance and vm_instance.status == 'running' %}
+<div class="alert alert-success">
+    <h5>✅ Виртуальная машина запущена</h5>
+    <p><strong>IP-адрес:</strong> <code class="fs-5">{{ vm_instance.ip_address }}</code></p>
+    <p><strong>Осталось времени:</strong> 
+        <span id="countdown" class="fw-bold text-danger fs-5"></span>
+    </p>
+</div>
+
+<div class="d-grid gap-2 d-md-flex justify-content-md-start">
+    <button onclick="resetTimer()" class="btn btn-warning btn-lg">Продлить таймер (+1 час)</button>
+    <button onclick="stopVM()" class="btn btn-danger btn-lg">Остановить машину</button>
+</div>
+
+<script>
+    function startCountdown(expiryTime) {
+        const countdownEl = document.getElementById('countdown');
+        
+        function updateTimer() {
+            const now = new Date().getTime();
+            const distance = expiryTime - now;
+
+            if (distance < 0) {
+                countdownEl.innerHTML = "Время вышло!";
+                countdownEl.classList.add('text-muted');
+                return;
+            }
+
+            const hours = Math.floor(distance / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            countdownEl.innerHTML = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        updateTimer();
+        setInterval(updateTimer, 1000);
+    }
+
+    // Запускаем таймер
+    const expiryTimestamp = new Date("{{ vm_instance.expires_at.isoformat }}").getTime();
+    startCountdown(expiryTimestamp);
+</script>
+
+{% else %}
+<div class="alert alert-secondary">
+    <p>Машина ещё не запущена. После запуска у вас будет ровно 1 час.</p>
+</div>
+<button onclick="startVM()" class="btn btn-success btn-lg px-5">
+    🚀 Запустить виртуалку на 1 час
+</button>
+{% endif %}
+
+<script>
+function startVM() {
+    if (confirm("Запустить виртуальную машину?")) {
+        window.location.href = "{% url 'vm_start' task.id %}";
+    }
+}
+function stopVM() {
+    if (confirm("Остановить машину?")) {
+        window.location.href = "{% url 'vm_stop' task.id %}";
+    }
+}
+function resetTimer() {
+    if (confirm("Продлить таймер ещё на 1 час?")) {
+        window.location.href = "{% url 'vm_reset_timer' task.id %}";
+    }
+}
+</script>

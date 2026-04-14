@@ -1,0 +1,9 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<h1 class="text-center my-5">Добро пожаловать на HX CTF Platform</h1>
+<p class="text-center lead">Платформа для студенческих CTF-соревнований</p>
+<div class="text-center">
+    <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Зарегистрироваться</a>
+</div>
+{% endblock %}

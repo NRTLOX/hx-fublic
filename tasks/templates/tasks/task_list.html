@@ -1,0 +1,41 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Доступные задания</h1>
+    
+    {% if tasks %}
+    <div class="row">
+        {% for task in tasks %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    
+                    <!-- Бейдж типа задания -->
+                    {% if task.task_type == 'file' %}
+                        <span class="badge bg-primary mb-2">Файл на взлом</span>
+                    {% else %}
+                        <span class="badge bg-danger mb-2">Виртуальная машина</span>
+                    {% endif %}
+                    
+                    <h5 class="card-title">{{ task.title }}</h5>
+                    <p class="card-text text-muted">{{ task.description|truncatewords:30 }}</p>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span class="badge bg-success">{{ task.points }} баллов</span>
+                        <a href="{% url 'task_detail' task.id %}" class="btn btn-outline-primary btn-sm">
+                            Перейти к заданию →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center">
+        Пока нет доступных заданий. Администратор скоро добавит.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
