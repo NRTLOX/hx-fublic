@@ -1,0 +1,116 @@
+/* custom.css - Тёмная тема с фиолетовым акцентом (финальная версия) */
+
+:root {
+    --bg-color: #18181b;
+    --card-bg: #27272a;
+    --input-bg: #3f3f46;
+    --text-color: #f1f5f9;
+    --text-muted: #9ca3af;
+    --accent-purple: #a855f7;
+    --accent-purple-hover: #9333ea;
+    --success: #4ade80;
+    --success-soft: #22c55e;
+    --danger: #f87171;
+    --danger-soft: #ef4444;
+    --border-color: #52525b;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+/* Шапка */
+.navbar {
+    background-color: #111827 !important;
+}
+
+/* Карточки */
+.card {
+    background-color: var(--card-bg) !important;
+    border: 1px solid #52525b;
+    color: var(--text-color) !important;
+}
+
+.card-title {
+    color: #f1f5f9 !important;
+}
+
+.card-text {
+    color: var(--text-muted) !important;
+}
+
+/* Поля ввода флага */
+.form-control {
+    background-color: var(--input-bg) !important;
+    color: var(--text-color) !important;
+    border: none !important;
+    border-radius: 8px;
+}
+
+.form-control:focus {
+    background-color: #4b5563 !important;
+    box-shadow: 0 0 0 0.3rem rgba(168, 85, 247, 0.4) !important;
+}
+
+/* Блок "Машина ещё не запущена" */
+.alert-secondary, .alert-light {
+    background-color: #3f3f46 !important;
+    color: var(--text-color) !important;
+    border: none !important;
+}
+
+/* Бейджи типов заданий — делаем фиолетовыми */
+.badge.bg-primary, .badge.bg-danger {
+    background-color: var(--accent-purple) !important;
+    color: white;
+}
+
+/* Более спокойные зелёный и красный */
+.badge.bg-success {
+    background-color: #4ade80 !important;
+    color: #111827;
+}
+
+.alert-success {
+    background-color: #14532d;
+    color: #86efac;
+    border-color: #4ade80;
+}
+
+.alert-danger {
+    background-color: #7f1d1d;
+    color: #fda4af;
+    border-color: #f87171;
+}
+
+/* Таблицы */
+.table {
+    color: var(--text-color) !important;
+    background-color: var(--card-bg) !important;
+}
+
+.table thead th {
+    background-color: #1f2937;
+    border-bottom: 2px solid #52525b;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #3f3f46;
+}
+
+/* Кнопки */
+.btn-primary, .btn-success {
+    background-color: var(--accent-purple);
+    border-color: var(--accent-purple);
+}
+
+.btn-primary:hover, .btn-success:hover {
+    background-color: var(--accent-purple-hover);
+}
+
+/* Код */
+code {
+    background-color: #3f3f46;
+    color: #c4d0ff;
+}
