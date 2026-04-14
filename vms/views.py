@@ -25,16 +25,14 @@ def generate_vm_id(user, task):
     """Генерирует уникальный ID для VM: 1000 + user.id * 100 + task.id"""
     return 1000 + (user.id * 100) + task.id
 
+
 @login_required
 def start_vm(request, task_id):
     task = get_object_or_404(Task, id=task_id, task_type='vm', is_active=True)
 
-    print(f"[DEBUG] start_vm вызван для пользователя {request.user.username}, task {task_id}")
-
-    # Удаляем все предыдущие записи для этого пользователя и задания
+    # Удаляем старые записи, если есть
     UserVMInstance.objects.filter(user=request.user, task=task).delete()
 
-    # Создаём новую машину
     ip_address = get_next_free_ip()
     if not ip_address:
         messages.error(request, "Все IP-адреса заняты.")
@@ -43,18 +41,16 @@ def start_vm(request, task_id):
     new_vm_id = generate_vm_id(request.user, task)
 
     try:
-        messages.info(request, f"Начинаем клонирование шаблона {task.proxmox_template_id} → VM {new_vm_id}...")
-
-        # 1. Клонируем шаблон
+        # Клонируем шаблон (без сообщений пользователю)
         proxmox_client.clone_vm(task.proxmox_template_id, new_vm_id)
 
-        # 2. Устанавливаем IP
+        # Устанавливаем IP
         proxmox_client.set_ip(new_vm_id, ip_address)
 
-        # 3. Запускаем машину
+        # Запускаем машину
         proxmox_client.start_vm(new_vm_id)
 
-        # 4. Сохраняем в базу
+        # Сохраняем в базу
         vm_instance = UserVMInstance.objects.create(
             user=request.user,
             task=task,
@@ -65,11 +61,12 @@ def start_vm(request, task_id):
             expires_at=timezone.now() + timedelta(hours=1)
         )
 
+        # Только финальное сообщение
         messages.success(request, f"✅ Виртуальная машина успешно запущена! IP: {ip_address}")
 
     except Exception as e:
-        print(f"[ERROR] {str(e)}")
-        messages.error(request, f"Ошибка при создании машины: {str(e)}")
+        print(f"[ERROR] start_vm: {str(e)}")
+        messages.error(request, "Не удалось запустить виртуальную машину. Обратитесь к администратору.")
         # Попытка очистки
         try:
             proxmox_client.destroy_vm(new_vm_id)
@@ -77,7 +74,6 @@ def start_vm(request, task_id):
             pass
 
     return redirect('task_detail', task_id=task.id)
-
 
 
 
