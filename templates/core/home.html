@@ -1,0 +1,13 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="text-center mt-5">
+    <h1 class="display-5">Добро пожаловать, {{ user.username }}!</h1>
+    <p class="lead">Вы успешно авторизованы и одобрены администратором.</p>
+    
+    <div class="mt-4">
+        <a href="/tasks/" class="btn btn-lg btn-success me-3">Перейти к заданиям</a>
+        <a href="/admin/" class="btn btn-lg btn-outline-secondary" target="_blank">Админ-панель</a>
+    </div>
+</div>
+{% endblock %}

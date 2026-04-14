@@ -1,0 +1,122 @@
+from django.shortcuts import redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils import timezone
+from datetime import timedelta
+
+from tasks.models import Task
+from .models import UserVMInstance
+from .proxmox_client import proxmox_client
+
+
+def get_next_free_ip():
+    """Находит следующий свободный IP начиная с 10.100.50.101"""
+    used_ips = UserVMInstance.objects.filter(status='running').values_list('ip_address', flat=True)
+
+    base_ip = "10.100.50."
+    for i in range(101, 250):
+        ip = f"{base_ip}{i}"
+        if ip not in used_ips:
+            return ip
+    return None
+
+
+def generate_vm_id(user, task):
+    """Генерирует уникальный ID для VM: 1000 + user.id * 100 + task.id"""
+    return 1000 + (user.id * 100) + task.id
+
+@login_required
+def start_vm(request, task_id):
+    task = get_object_or_404(Task, id=task_id, task_type='vm', is_active=True)
+
+    print(f"[DEBUG] start_vm вызван для пользователя {request.user.username}, task {task_id}")
+
+    # Удаляем все предыдущие записи для этого пользователя и задания
+    UserVMInstance.objects.filter(user=request.user, task=task).delete()
+
+    # Создаём новую машину
+    ip_address = get_next_free_ip()
+    if not ip_address:
+        messages.error(request, "Все IP-адреса заняты.")
+        return redirect('task_detail', task_id=task.id)
+
+    new_vm_id = generate_vm_id(request.user, task)
+
+    try:
+        messages.info(request, f"Начинаем клонирование шаблона {task.proxmox_template_id} → VM {new_vm_id}...")
+
+        # 1. Клонируем шаблон
+        proxmox_client.clone_vm(task.proxmox_template_id, new_vm_id)
+
+        # 2. Устанавливаем IP
+        proxmox_client.set_ip(new_vm_id, ip_address)
+
+        # 3. Запускаем машину
+        proxmox_client.start_vm(new_vm_id)
+
+        # 4. Сохраняем в базу
+        vm_instance = UserVMInstance.objects.create(
+            user=request.user,
+            task=task,
+            proxmox_vm_id=new_vm_id,
+            ip_address=ip_address,
+            status='running',
+            started_at=timezone.now(),
+            expires_at=timezone.now() + timedelta(hours=1)
+        )
+
+        messages.success(request, f"✅ Виртуальная машина успешно запущена! IP: {ip_address}")
+
+    except Exception as e:
+        print(f"[ERROR] {str(e)}")
+        messages.error(request, f"Ошибка при создании машины: {str(e)}")
+        # Попытка очистки
+        try:
+            proxmox_client.destroy_vm(new_vm_id)
+        except:
+            pass
+
+    return redirect('task_detail', task_id=task.id)
+
+
+
+@login_required
+def stop_vm(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+    vm_instance = UserVMInstance.objects.filter(user=request.user, task=task).first()
+
+    if not vm_instance or vm_instance.status != 'running':
+        messages.warning(request, "Машина не запущена.")
+        return redirect('task_detail', task_id=task.id)
+
+    try:
+        # Останавливаем машину
+        proxmox_client.stop_vm(vm_instance.proxmox_vm_id)
+        
+        # Меняем статус
+        vm_instance.status = 'stopped'
+        vm_instance.save()
+
+        messages.success(request, "Машина остановлена. Через 30 секунд она будет уничтожена.")
+        
+        # TODO: Позже добавим Celery-задачу на уничтожение через 30 секунд
+
+    except Exception as e:
+        messages.error(request, f"Ошибка при остановке машины: {str(e)}")
+
+    return redirect('task_detail', task_id=task.id)
+
+
+@login_required
+def reset_timer(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+    vm_instance = UserVMInstance.objects.filter(user=request.user, task=task, status='running').first()
+
+    if vm_instance:
+        vm_instance.expires_at = timezone.now() + timedelta(hours=1)
+        vm_instance.save()
+        messages.success(request, "Таймер продлён на 1 час.")
+    else:
+        messages.warning(request, "Машина не запущена.")
+
+    return redirect('task_detail', task_id=task.id)

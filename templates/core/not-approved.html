@@ -1,0 +1,9 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="text-center mt-5">
+    <h2>Ваш аккаунт ожидает одобрения</h2>
+    <p>Администратор должен одобрить вашу регистрацию.</p>
+    <a href="{% url 'logout' %}" class="btn btn-secondary">Выйти</a>
+</div>
+{% endblock %}
