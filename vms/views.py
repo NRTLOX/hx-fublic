@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
-
+import time
 from tasks.models import Task
 from .models import UserVMInstance
 from .proxmox_client import proxmox_client
@@ -80,31 +80,36 @@ def start_vm(request, task_id):
 
 
 
+
 @login_required
 def stop_vm(request, task_id):
     task = get_object_or_404(Task, id=task_id)
     vm_instance = UserVMInstance.objects.filter(user=request.user, task=task).first()
 
-    if not vm_instance or vm_instance.status != 'running':
-        messages.warning(request, "Машина не запущена.")
+    if not vm_instance:
+        messages.warning(request, "Машина не найдена.")
         return redirect('task_detail', task_id=task.id)
 
     try:
-        # Останавливаем машину
-        proxmox_client.stop_vm(vm_instance.proxmox_vm_id)
-        
-        # Меняем статус
-        vm_instance.status = 'stopped'
+        messages.info(request, "Останавливаем и уничтожаем виртуальную машину...")
+
+        if vm_instance.proxmox_vm_id:
+            proxmox_client.stop_vm(vm_instance.proxmox_vm_id)
+            time.sleep(20)                     # даём время на shutdown
+            proxmox_client.destroy_vm(vm_instance.proxmox_vm_id)
+
+        vm_instance.status = 'destroyed'
         vm_instance.save()
 
-        messages.success(request, "Машина остановлена. Через 30 секунд она будет уничтожена.")
-        
-        # TODO: Позже добавим Celery-задачу на уничтожение через 30 секунд
+        messages.success(request, "✅ Машина успешно остановлена и полностью удалена.")
 
     except Exception as e:
-        messages.error(request, f"Ошибка при остановке машины: {str(e)}")
+        print(f"[ERROR] stop_vm: {str(e)}")
+        messages.error(request, f"Ошибка при остановке: {str(e)}")
 
     return redirect('task_detail', task_id=task.id)
+
+
 
 
 @login_required

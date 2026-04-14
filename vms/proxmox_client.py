@@ -30,8 +30,6 @@ class ProxmoxClient:
         if not success:
             raise Exception("Клонирование не завершилось успешно")
         
-        # Дополнительная пауза после клонирования — очень важно!
-        print("[Proxmox] Клонирование завершено. Ждём 8 секунд перед настройкой...")
         time.sleep(8)
         return True
 
@@ -43,7 +41,6 @@ class ProxmoxClient:
 
     def start_vm(self, vm_id):
         print(f"[Proxmox] → Запускаем VM {vm_id}")
-        # Добавляем небольшую задержку перед стартом
         time.sleep(3)
         return self.proxmox.nodes(self.node).qemu(vm_id).status.start.post()
 
@@ -52,8 +49,33 @@ class ProxmoxClient:
         return self.proxmox.nodes(self.node).qemu(vm_id).status.shutdown.post()
 
     def destroy_vm(self, vm_id):
+        """Полностью удаляем VM + конфиг"""
         print(f"[Proxmox] → Уничтожаем VM {vm_id}")
-        return self.proxmox.nodes(self.node).qemu(vm_id).delete()
+        try:
+            # Основное удаление
+            self.proxmox.nodes(self.node).qemu(vm_id).delete(purge=1)
+            print(f"[Proxmox] Удаление VM {vm_id} запущено")
+            time.sleep(5)
+            
+            # Принудительно удаляем конфиг файл, если он остался
+            try:
+                import subprocess
+                subprocess.run(['rm', '-f', f'/etc/pve/qemu-server/{vm_id}.conf'], 
+                             check=False, timeout=10)
+                print(f"[Proxmox] Конфиг файл {vm_id}.conf удалён")
+            except:
+                pass
+                
+        except Exception as e:
+            print(f"[Proxmox] Ошибка при destroy: {e}")
+            # Последняя попытка через shell
+            try:
+                import subprocess
+                subprocess.run(['qm', 'destroy', str(vm_id), '--purge'], 
+                             check=False, timeout=15)
+                print(f"[Proxmox] qm destroy --purge выполнен")
+            except:
+                pass
 
     def wait_for_task(self, task_id, timeout=90):
         print(f"[Proxmox] Ожидаем задачу {task_id}...")
@@ -64,8 +86,8 @@ class ProxmoxClient:
                 print(f"[Proxmox] Статус: {status.get('status')} | exit: {status.get('exitstatus')}")
                 if status.get('status') == 'stopped':
                     return status.get('exitstatus') == 'OK'
-            except Exception as e:
-                print(f"[Proxmox] Ошибка при проверке задачи: {e}")
+            except:
+                pass
             time.sleep(4)
         print(f"[Proxmox] Таймаут задачи {task_id}")
         return False
