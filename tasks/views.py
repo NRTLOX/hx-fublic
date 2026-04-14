@@ -5,14 +5,25 @@ from .models import Task, Submission
 from vms.models import UserVMInstance
 
 
+    
 @login_required
 def task_list(request):
     if not request.user.is_approved:
         return redirect('home')
     
-    tasks = Task.objects.filter(is_active=True)
-    return render(request, 'tasks/task_list.html', {'tasks': tasks})
+    tasks = Task.objects.filter(is_active=True).prefetch_related('flags')
 
+    # Получаем список ID заданий, которые пользователь уже решил (хотя бы один правильный флаг)
+    solved_task_ids = Submission.objects.filter(
+        user=request.user,
+        is_correct=True
+    ).values_list('task_id', flat=True).distinct()
+
+    context = {
+        'tasks': tasks,
+        'solved_task_ids': list(solved_task_ids),
+    }
+    return render(request, 'tasks/task_list.html', context)
 
 @login_required
 def task_detail(request, task_id):

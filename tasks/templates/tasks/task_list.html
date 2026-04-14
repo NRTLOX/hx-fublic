@@ -4,22 +4,28 @@
 <div class="container">
     <h1 class="mb-4">Доступные задания</h1>
     
-    {% if tasks %}
     <div class="row">
         {% for task in tasks %}
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="card h-100 shadow-sm">
-                <div class="card-body">
+                <div class="card-body position-relative">
                     
-                    <!-- Бейдж типа задания -->
+                    <!-- Статус "Выполнено" -->
+                    {% if task.id in solved_task_ids %}
+                    <span class="position-absolute top-0 end-0 badge bg-success mt-2 me-2">
+                        ✓ Выполнено
+                    </span>
+                    {% endif %}
+
+                    <!-- Тип задания -->
                     {% if task.task_type == 'file' %}
                         <span class="badge bg-primary mb-2">Файл на взлом</span>
                     {% else %}
                         <span class="badge bg-danger mb-2">Виртуальная машина</span>
                     {% endif %}
-                    
+
                     <h5 class="card-title">{{ task.title }}</h5>
-                    <p class="card-text text-muted">{{ task.description|truncatewords:30 }}</p>
+                    <p class="card-text text-muted">{{ task.description|truncatewords:25 }}</p>
                     
                     <div class="d-flex justify-content-between align-items-center mt-3">
                         <span class="badge bg-success">{{ task.points }} баллов</span>
@@ -30,12 +36,11 @@
                 </div>
             </div>
         </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="text-center text-muted">Пока нет доступных заданий.</p>
+        </div>
         {% endfor %}
     </div>
-    {% else %}
-    <div class="alert alert-info text-center">
-        Пока нет доступных заданий. Администратор скоро добавит.
-    </div>
-    {% endif %}
 </div>
 {% endblock %}
