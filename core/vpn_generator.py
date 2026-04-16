@@ -1,106 +1,76 @@
 import os
 import subprocess
-from django.conf import settings
 from .models import VPNClient, UserNetwork
 
 class VPNGenerator:
-    EASY_RSA_PATH = "/etc/easy-rsa"
-    OPENVPN_CCD_PATH = "/etc/openvpn/ccd"
 
     @staticmethod
     def get_or_create_network(user):
-        """Выделяет пользователю уникальную подсеть 10.100.51.0/24 и дальше"""
         network, created = UserNetwork.objects.get_or_create(user=user)
         
-        if created:
-            # Находим следующую свободную подсеть начиная с 51
-            used_subnets = UserNetwork.objects.values_list('subnet', flat=True)
+        if created or not network.subnet:
+            used = set(UserNetwork.objects.exclude(user=user).values_list('subnet', flat=True))
             base = 51
             while True:
                 subnet = f"10.100.{base}.0/24"
-                if subnet not in used_subnets:
+                if subnet not in used:
                     network.subnet = subnet
                     network.save()
                     print(f"[VPN] Пользователю {user.username} назначена подсеть {subnet}")
                     break
                 base += 1
-                if base > 200:  # защита от переполнения
+                if base > 200:
                     raise Exception("Не удалось найти свободную подсеть")
         
         return network
 
     @staticmethod
-    def get_or_create_client(user):
-        """Создаёт клиентский сертификат"""
-        client, created = VPNClient.objects.get_or_create(
-            user=user,
-            defaults={'certificate_name': f"client_{user.username}"}
-        )
-
-        if created:
-            cert_name = client.certificate_name
-            try:
-                subprocess.run([
-                    os.path.join(VPNGenerator.EASY_RSA_PATH, "easyrsa"),
-                    "--batch",
-                    "build-client-full",
-                    cert_name,
-                    "nopass"
-                ], cwd=VPNGenerator.EASY_RSA_PATH, check=True, capture_output=True)
-                print(f"[VPN] Сертификат для {user.username} создан")
-            except Exception as e:
-                print(f"[VPN] Ошибка создания сертификата: {e}")
-                return None
-
-        return client
-
-    @staticmethod
     def generate_ovpn_config(user):
-        """Генерирует полный .ovpn конфиг с индивидуальным маршрутом"""
-        client = VPNGenerator.get_or_create_client(user)
-        if not client:
-            return None
-
-        network = VPNGenerator.get_or_create_network(user)
-        cert_name = client.certificate_name
+        print(f"[VPN] generate_ovpn_config вызвана для {user.username}")
 
         try:
-            # Создаём CCD файл (client-config-dir)
-            ccd_dir = VPNGenerator.OPENVPN_CCD_PATH
+            cert_name = f"client_{user.username}"
+
+            # 1. Назначаем подсеть
+            network = VPNGenerator.get_or_create_network(user)
+            print(f"[VPN] Подсеть: {network.subnet}")
+
+            # 2. Отзываем старый сертификат (если был) и создаём новый
+            print(f"[VPN] Пересоздаём сертификат {cert_name}...")
+            subprocess.run([
+                "docker", "exec", "openvpn",
+                "easyrsa", "--batch", "revoke", cert_name
+            ], check=False)  # ignore error if not exists
+
+            # Создаём новый сертификат
+            subprocess.run([
+                "docker", "exec", "openvpn",
+                "easyrsa", "--batch", "build-client-full", cert_name, "nopass"
+            ], check=True, capture_output=True)
+            print(f"[VPN] Сертификат {cert_name} создан")
+
+            # 3. Создаём CCD файл
+            ccd_dir = "/var/www/hxctf/openvpn-data/ccd"
             os.makedirs(ccd_dir, exist_ok=True)
+            ccd_file = os.path.join(ccd_dir, cert_name)
             
-            ccd_content = f'push "route {network.subnet.split("/")[0]} 255.255.255.0"\n'
-            with open(os.path.join(ccd_dir, cert_name), 'w') as f:
-                f.write(ccd_content)
+            with open(ccd_file, 'w') as f:
+                f.write(f'push "route {network.subnet.split("/")[0]} 255.255.255.0"\n')
+            
+            print(f"[VPN] CCD файл создан: {ccd_file}")
 
-            # Читаем сертификаты
-            ca = open('/etc/openvpn/ca.crt').read()
-            cert = open(f'/etc/easy-rsa/pki/issued/{cert_name}.crt').read()
-            key = open(f'/etc/easy-rsa/pki/private/{cert_name}.key').read()
+            # 4. Получаем конфиг
+            result = subprocess.run([
+                "docker", "exec", "openvpn",
+                "ovpn_getclient", cert_name
+            ], capture_output=True, text=True, check=True)
 
-            config = f"""client
-dev tun
-proto udp
-remote 10.4.50.15 1194
-resolv-retry infinite
-nobind
-persist-key
-persist-tun
-remote-cert-tls server
-cipher AES-256-GCM
-auth SHA512
-verb 3
+            print(f"[VPN] УСПЕХ: Конфиг сгенерирован для {user.username}")
+            return result.stdout
 
-<ca>
-{ca}</ca>
-<cert>
-{cert}</cert>
-<key>
-{key}</key>
-"""
-
-            return config
-
+        except subprocess.CalledProcessError as e:
+            print(f"[VPN] Ошибка docker команды: {e}")
+            return None
         except Exception as e:
-            print(f"[VPN] Ошибка при генерации конфига: {e}")
+            print(f"[VPN] Неожиданная ошибка: {e}")
             return None
