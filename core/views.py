@@ -7,6 +7,8 @@ from .forms import CustomUserCreationForm
 from django.db.models import Q
 from django.contrib.auth import get_user_model
 User = get_user_model()
+import subprocess
+from django.http import HttpResponse
 
 def home(request):
     if request.user.is_authenticated:
@@ -117,29 +119,47 @@ from django.contrib import messages
 from .models import VPNClient
 from .vpn_generator import VPNGenerator   # создадим этот файл ниже
 
+
 @login_required
 def download_vpn_config(request):
     if not request.user.is_approved:
-        messages.error(request, "Ваш аккаунт ещё не одобрен.")
+        messages.error(request, "Ваш аккаунт ещё не одобрен администратором.")
         return redirect('home')
 
+    username = request.user.username
+    client_name = f"client_{username}"
+
     try:
-        config = VPNGenerator.generate_ovpn_config(request.user)
-        
-        if not config:
-            messages.error(request, "Не удалось сгенерировать VPN конфиг.")
-            return redirect('home')
+        # Удаляем старый сертификат, если он существует (чтобы можно было перегенерировать)
+        subprocess.run([
+            "docker", "exec", "openvpn", "easyrsa", "--batch", "revoke", client_name
+        ], check=False, capture_output=True)
 
-        # Имя файла для скачивания
-        filename = f"{request.user.username}_hxctf.ovpn"
+        subprocess.run([
+            "docker", "exec", "openvpn", "easyrsa", "--batch", "build-client-full", client_name, "nopass"
+        ], check=True, capture_output=True)
 
-        response = HttpResponse(config, content_type='text/plain')
+        # Получаем готовый .ovpn конфиг
+        result = subprocess.run([
+            "docker", "exec", "openvpn", "ovpn_getclient", client_name
+        ], capture_output=True, text=True, check=True)
+
+        ovpn_config = result.stdout
+
+        filename = f"{username}_hxctf.ovpn"
+
+        response = HttpResponse(ovpn_config, content_type='application/x-openvpn-profile')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        
-        messages.success(request, "VPN конфиг успешно сгенерирован и скачивается...")
+
+        messages.success(request, f"VPN конфиг для {username} успешно сгенерирован и скачивается!")
         return response
 
+    except subprocess.CalledProcessError as e:
+        error_msg = e.stderr.decode() if e.stderr else str(e)
+        print(f"[VPN Error] {error_msg}")
+        messages.error(request, "Не удалось сгенерировать VPN конфиг. Попробуйте позже.")
+        return redirect('home')
     except Exception as e:
         print(f"[VPN Error] {e}")
-        messages.error(request, "Произошла ошибка при генерации VPN конфига. Обратитесь к администратору.")
+        messages.error(request, "Произошла ошибка при генерации VPN конфига.")
         return redirect('home')

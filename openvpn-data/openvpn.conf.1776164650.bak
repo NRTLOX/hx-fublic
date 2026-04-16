@@ -1,4 +1,4 @@
-server 10.100.60.0 255.255.255.0
+server 192.168.255.0 255.255.255.0
 verb 3
 key /etc/openvpn/pki/private/10.4.50.15.key
 ca /etc/openvpn/pki/ca.crt
@@ -28,5 +28,3 @@ push "block-outside-dns"
 push "dhcp-option DNS 8.8.8.8"
 push "dhcp-option DNS 8.8.4.4"
 push "comp-lzo no"
-push "route 10.100.50.0 255.255.255.0"
-push "route 10.100.50.0 255.255.255.0"

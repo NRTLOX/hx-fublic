@@ -11,7 +11,9 @@ from .proxmox_client import proxmox_client
 
 def get_next_free_ip():
     """Находит следующий свободный IP начиная с 10.100.50.101"""
-    used_ips = UserVMInstance.objects.filter(status='running').values_list('ip_address', flat=True)
+    used_ips = UserVMInstance.objects.filter(
+        status__in=['running', 'stopped']
+    ).values_list('ip_address', flat=True)
 
     base_ip = "10.100.50."
     for i in range(101, 250):
@@ -19,7 +21,6 @@ def get_next_free_ip():
         if ip not in used_ips:
             return ip
     return None
-
 
 def generate_vm_id(user, task):
     """
