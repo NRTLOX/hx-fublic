@@ -1,0 +1,4 @@
+generate_ovpn_config ВЫЗВАН для www
+get_or_create_client вызван для www
+Ошибка создания сертификата: [Errno 2] No such file or directory: '/etc/easy-rsa'
+Не удалось создать клиентский сертификат

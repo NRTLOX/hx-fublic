@@ -8,19 +8,34 @@ from tasks.models import Task
 from .models import UserVMInstance
 from .proxmox_client import proxmox_client
 
+def get_next_free_ip(user):
+    """Находит следующий свободный IP в личной подсети пользователя"""
+    from core.models import UserNetwork
+    
+    try:
+        user_network = UserNetwork.objects.get(user=user)
+        third_octet = user_network.subnet.split('.')[2]
+    except UserNetwork.DoesNotExist:
+        print(f"[VM] У пользователя {user.username} ещё не назначена подсеть")
+        return None
+    except Exception as e:
+        print(f"[VM] Ошибка получения подсети пользователя {user.username}: {e}")
+        return None
 
-def get_next_free_ip():
-    """Находит следующий свободный IP начиная с 10.100.50.101"""
+    base_ip = f"10.100.{third_octet}."
+    
     used_ips = UserVMInstance.objects.filter(
         status__in=['running', 'stopped']
     ).values_list('ip_address', flat=True)
 
-    base_ip = "10.100.50."
     for i in range(101, 250):
         ip = f"{base_ip}{i}"
         if ip not in used_ips:
             return ip
+
+    print(f"[VM] В подсети {base_ip}0/24 все IP заняты")
     return None
+
 
 def generate_vm_id(user, task):
     """
@@ -37,7 +52,7 @@ def start_vm(request, task_id):
     # Удаляем старые записи, если есть
     UserVMInstance.objects.filter(user=request.user, task=task).delete()
 
-    ip_address = get_next_free_ip()
+    ip_address = get_next_free_ip(request.user)
     if not ip_address:
         messages.error(request, "Все IP-адреса заняты.")
         return redirect('task_detail', task_id=task.id)

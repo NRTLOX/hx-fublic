@@ -27,8 +27,11 @@ def register_view(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            user.is_approved = False  # Важно! Новый пользователь не одобрен
+            user.is_approved = False
             user.save()
+            
+            # Автоматически создаём запись о подсети (пока без конкретной подсети)
+            # Подсеть будет назначена при первой генерации VPN конфига
             messages.success(request, 'Регистрация прошла успешно! Ожидайте одобрения администратора.')
             return redirect('login')
     else:
@@ -119,47 +122,22 @@ from django.contrib import messages
 from .models import VPNClient
 from .vpn_generator import VPNGenerator   # создадим этот файл ниже
 
-
 @login_required
 def download_vpn_config(request):
     if not request.user.is_approved:
-        messages.error(request, "Ваш аккаунт ещё не одобрен администратором.")
+        messages.error(request, "Ваш аккаунт ещё не одобрен.")
         return redirect('home')
 
-    username = request.user.username
-    client_name = f"client_{username}"
+    config = VPNGenerator.generate_ovpn_config(request.user)
 
-    try:
-        # Удаляем старый сертификат, если он существует (чтобы можно было перегенерировать)
-        subprocess.run([
-            "docker", "exec", "openvpn", "easyrsa", "--batch", "revoke", client_name
-        ], check=False, capture_output=True)
-
-        subprocess.run([
-            "docker", "exec", "openvpn", "easyrsa", "--batch", "build-client-full", client_name, "nopass"
-        ], check=True, capture_output=True)
-
-        # Получаем готовый .ovpn конфиг
-        result = subprocess.run([
-            "docker", "exec", "openvpn", "ovpn_getclient", client_name
-        ], capture_output=True, text=True, check=True)
-
-        ovpn_config = result.stdout
-
-        filename = f"{username}_hxctf.ovpn"
-
-        response = HttpResponse(ovpn_config, content_type='application/x-openvpn-profile')
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
-
-        messages.success(request, f"VPN конфиг для {username} успешно сгенерирован и скачивается!")
-        return response
-
-    except subprocess.CalledProcessError as e:
-        error_msg = e.stderr.decode() if e.stderr else str(e)
-        print(f"[VPN Error] {error_msg}")
-        messages.error(request, "Не удалось сгенерировать VPN конфиг. Попробуйте позже.")
+    if not config:
+        messages.error(request, "Не удалось сгенерировать VPN конфиг.")
         return redirect('home')
-    except Exception as e:
-        print(f"[VPN Error] {e}")
-        messages.error(request, "Произошла ошибка при генерации VPN конфига.")
-        return redirect('home')
+
+    filename = f"{request.user.username}_hxctf.ovpn"
+
+    response = HttpResponse(config, content_type='application/x-openvpn-profile')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    messages.success(request, f"VPN конфиг для {request.user.username} скачивается...")
+    return response

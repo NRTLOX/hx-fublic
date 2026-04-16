@@ -1,0 +1,84 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            ac:e2:b2:4f:f0:e8:4b:80:2d:f2:12:fa:d8:58:82:e9
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: CN=ib-vpn
+        Validity
+            Not Before: Apr 16 06:57:23 2026 GMT
+            Not After : Jul 19 06:57:23 2028 GMT
+        Subject: CN=client_www
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                RSA Public-Key: (2048 bit)
+                Modulus:
+                    00:da:72:10:b9:70:f9:21:56:dc:f6:c9:c7:7f:cb:
+                    d0:06:5b:79:10:7d:92:96:4f:f4:5b:42:ec:2c:37:
+                    00:4a:4b:c2:9b:14:f2:20:25:05:e6:79:ef:34:1e:
+                    56:9a:35:4c:34:a8:1e:dd:f8:e1:7b:c0:5b:70:18:
+                    da:f8:6d:ed:bc:cb:87:9a:6b:3c:02:08:99:f0:38:
+                    bf:b1:4e:2b:cf:e4:97:8d:10:55:92:83:ee:65:a0:
+                    f6:cf:e2:f2:78:5d:87:14:58:e0:72:41:30:c4:3b:
+                    ee:52:9b:ae:c2:4a:06:57:ee:60:a3:c6:4f:fa:26:
+                    2e:87:56:6d:13:de:3f:48:d4:bf:7c:94:41:ee:f6:
+                    b7:c1:31:65:4d:64:54:17:ef:42:6c:50:00:63:f0:
+                    dc:8e:6e:b7:09:69:aa:dd:f6:42:9b:2f:dd:ec:8b:
+                    cf:a8:07:80:fb:ae:37:71:37:94:04:10:b5:cd:92:
+                    a2:ae:81:a6:ac:41:07:c7:a4:12:12:78:91:b5:d9:
+                    11:9b:7e:fd:3e:9f:a8:9a:ff:ab:bf:a4:c6:57:e9:
+                    dc:28:64:c7:ff:6f:c7:bf:0e:ef:77:30:45:b2:4b:
+                    e9:04:7f:d2:91:18:09:22:e6:94:d1:a1:44:51:3a:
+                    9e:c6:a7:26:44:3c:f8:d9:ab:77:78:3d:e1:24:76:
+                    d8:55
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            X509v3 Subject Key Identifier: 
+                BF:B9:F3:08:89:D0:8D:FD:B1:3F:4A:61:EC:F0:0F:8F:62:F5:B7:B0
+            X509v3 Authority Key Identifier: 
+                keyid:DF:F0:39:F0:18:21:1F:9B:47:ED:B9:90:AA:38:3B:88:A9:E3:1E:7F
+                DirName:/CN=ib-vpn
+                serial:1E:C2:AE:BA:D4:84:7E:D4:92:A5:E6:AE:0F:86:A5:34:2F:72:08:BB
+
+            X509v3 Extended Key Usage: 
+                TLS Web Client Authentication
+            X509v3 Key Usage: 
+                Digital Signature
+    Signature Algorithm: sha256WithRSAEncryption
+         10:14:4d:88:c4:fd:99:0a:5f:86:fe:59:c1:12:14:ae:86:82:
+         cb:da:98:fa:a6:09:dc:6d:fc:7d:59:1f:41:06:c0:d3:b4:f7:
+         b3:52:20:41:7f:27:b3:91:f3:0a:58:68:c5:21:ae:23:5b:e7:
+         a3:79:45:0b:5c:88:3d:4b:79:f4:60:d8:41:fe:24:a6:6c:02:
+         55:2b:8e:f4:71:52:2c:95:81:5e:ea:18:b4:bc:08:4c:15:69:
+         8f:b2:f5:24:a3:a1:3b:b3:5a:04:07:5a:31:b9:28:19:f0:fe:
+         cf:e3:ec:3f:4d:eb:69:25:eb:40:c2:ec:69:b7:cf:4f:63:eb:
+         6c:81:bb:a8:c3:31:20:b9:4f:f7:4c:4d:4c:03:ed:6d:b4:90:
+         57:78:b8:47:51:89:69:dd:61:cf:28:a1:d2:52:ed:71:e3:c5:
+         09:b1:1c:62:44:e7:c5:39:24:ef:61:67:8e:d8:78:d6:bd:22:
+         78:49:12:6c:23:78:3e:b7:0c:42:cd:d5:70:91:fb:3c:6f:20:
+         2e:1c:a2:c8:db:8d:f6:d4:92:cd:72:e2:0d:7f:9f:c9:0a:be:
+         2e:11:50:bb:74:35:4e:c0:ba:42:1e:41:c1:c7:fa:fe:21:fe:
+         cd:c6:7c:51:94:c1:44:f6:10:df:12:96:7a:6c:96:f2:cf:f5:
+         ec:1f:a7:da
+-----BEGIN CERTIFICATE-----
+MIIDTzCCAjegAwIBAgIRAKzisk/w6EuALfIS+thYgukwDQYJKoZIhvcNAQELBQAw
+ETEPMA0GA1UEAwwGaWItdnBuMB4XDTI2MDQxNjA2NTcyM1oXDTI4MDcxOTA2NTcy
+M1owFTETMBEGA1UEAwwKY2xpZW50X3d3dzCCASIwDQYJKoZIhvcNAQEBBQADggEP
+ADCCAQoCggEBANpyELlw+SFW3PbJx3/L0AZbeRB9kpZP9FtC7Cw3AEpLwpsU8iAl
+BeZ57zQeVpo1TDSoHt344XvAW3AY2vht7bzLh5prPAIImfA4v7FOK8/kl40QVZKD
+7mWg9s/i8nhdhxRY4HJBMMQ77lKbrsJKBlfuYKPGT/omLodWbRPeP0jUv3yUQe72
+t8ExZU1kVBfvQmxQAGPw3I5utwlpqt32Qpsv3eyLz6gHgPuuN3E3lAQQtc2Soq6B
+pqxBB8ekEhJ4kbXZEZt+/T6fqJr/q7+kxlfp3Chkx/9vx78O73cwRbJL6QR/0pEY
+CSLmlNGhRFE6nsanJkQ8+Nmrd3g94SR22FUCAwEAAaOBnTCBmjAJBgNVHRMEAjAA
+MB0GA1UdDgQWBBS/ufMIidCN/bE/SmHs8A+PYvW3sDBMBgNVHSMERTBDgBTf8Dnw
+GCEfm0ftuZCqODuIqeMef6EVpBMwETEPMA0GA1UEAwwGaWItdnBughQewq661IR+
+1JKl5q4PhqU0L3IIuzATBgNVHSUEDDAKBggrBgEFBQcDAjALBgNVHQ8EBAMCB4Aw
+DQYJKoZIhvcNAQELBQADggEBABAUTYjE/ZkKX4b+WcESFK6GgsvamPqmCdxt/H1Z
+H0EGwNO097NSIEF/J7OR8wpYaMUhriNb56N5RQtciD1LefRg2EH+JKZsAlUrjvRx
+UiyVgV7qGLS8CEwVaY+y9SSjoTuzWgQHWjG5KBnw/s/j7D9N62kl60DC7Gm3z09j
+62yBu6jDMSC5T/dMTUwD7W20kFd4uEdRiWndYc8oodJS7XHjxQmxHGJE58U5JO9h
+Z47YeNa9InhJEmwjeD63DELN1XCR+zxvIC4cosjbjfbUks1y4g1/n8kKvi4RULt0
+NU7AukIeQcHH+v4h/s3GfFGUwUT2EN8SlnpslvLP9ewfp9o=
+-----END CERTIFICATE-----
