@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Task, Submission
 from vms.models import UserVMInstance
-
+from tasks.models import Task, Flag
 
     
 @login_required
@@ -49,61 +49,72 @@ def task_detail(request, task_id):
     
 @login_required
 def submit_flag(request, task_id):
-    if not request.user.is_approved:
-        return redirect('home')
-    
     task = get_object_or_404(Task, id=task_id)
-    
+    vm_instance = UserVMInstance.objects.filter(
+        user=request.user, 
+        task=task, 
+        status='running'
+    ).first()
+
     if request.method == 'POST':
         submitted_text = request.POST.get('flag', '').strip()
         flag_id = request.POST.get('flag_id')
 
-        flag_obj = None
-        is_correct = False
+        if not submitted_text:
+            messages.error(request, "Флаг не может быть пустым.")
+            return redirect('task_detail', task_id=task.id)
 
-        if flag_id:
-            flag_obj = task.flags.filter(id=flag_id).first()
+        if not vm_instance:
+            messages.error(request, "Виртуальная машина не запущена.")
+            return redirect('task_detail', task_id=task.id)
 
-        if flag_obj:
-            # Проверяем, сдавал ли уже этот флаг пользователь успешно
-            already_solved = Submission.objects.filter(
-                user=request.user,
-                flag=flag_obj,
-                is_correct=True
-            ).exists()
+        try:
+            flag_obj = Flag.objects.get(id=flag_id, task=task)
+            
+            # Получаем сгенерированный флаг для этой VM
+            saved_flag = vm_instance.generated_flags.get(str(flag_obj.id))
 
-            if already_solved:
-                messages.info(request, '✅ Этот флаг уже принят ранее.')
-                return redirect('task_detail', task_id=task.id)
+            # Проверяем, сдавал ли уже этот флаг пользователь
+            existing_submission = Submission.objects.filter(
+                user=request.user, 
+                flag=flag_obj
+            ).first()
 
-            # Проверяем правильность
-            if flag_obj.flag_value.strip() == submitted_text:
-                is_correct = True
-
-        else:
-            # Если flag_id не передан — проверяем все флаги задания
-            for f in task.flags.all():
-                if f.flag_value.strip() == submitted_text:
-                    flag_obj = f
-                    # Проверяем, не сдан ли уже этот флаг
-                    if Submission.objects.filter(user=request.user, flag=f, is_correct=True).exists():
-                        messages.info(request, '✅ Этот флаг уже принят ранее.')
-                        return redirect('task_detail', task_id=task.id)
-                    is_correct = True
-                    break
-
-        # Создаём запись о попытке
-        Submission.objects.create(
-            user=request.user,
-            task=task,
-            flag=flag_obj,
-            submitted_flag=submitted_text,
-            is_correct=is_correct
-        )
-
-        if is_correct:
-            messages.success(request, '✅ Флаг принят! Отлично!')
-        else:
-            messages.error(request, '❌ Неверный флаг.')
+            if saved_flag and saved_flag.strip() == submitted_text:
+                # Правильный флаг
+                if existing_submission and existing_submission.is_correct:
+                    messages.warning(request, "Этот флаг уже был успешно сдан ранее.")
+                else:
+                    # Создаём или обновляем запись
+                    if existing_submission:
+                        existing_submission.is_correct = True
+                        existing_submission.submitted_flag = submitted_text
+                        existing_submission.save()
+                    else:
+                        Submission.objects.create(
+                            user=request.user,
+                            task=task,
+                            flag=flag_obj,
+                            submitted_flag=submitted_text,
+                            is_correct=True
+                        )
+                    messages.success(request, f"✅ Флаг принят! +{task.points} баллов")
+            else:
+                # Неправильный флаг
+                if not existing_submission:
+                    Submission.objects.create(
+                        user=request.user,
+                        task=task,
+                        flag=flag_obj,
+                        submitted_flag=submitted_text,
+                        is_correct=False
+                    )
+                messages.error(request, "❌ Неверный флаг.")
+                
+        except Flag.DoesNotExist:
+            messages.error(request, "Флаг не найден.")
+        except Exception as e:
+            print(f"[Submit Flag Error] {e}")
+            messages.error(request, "Произошла ошибка при проверке флага.")
 
     return redirect('task_detail', task_id=task.id)

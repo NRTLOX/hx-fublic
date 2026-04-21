@@ -50,11 +50,12 @@ def generate_vm_id(user, task):
 
 
 
+
 @login_required
 def start_vm(request, task_id):
     task = get_object_or_404(Task, id=task_id, task_type='vm', is_active=True)
 
-    # Удаляем старую VM запись
+    # Удаляем старую запись VM для этого пользователя и задания
     UserVMInstance.objects.filter(user=request.user, task=task).delete()
 
     ip_address = get_next_free_ip(request.user)
@@ -82,11 +83,16 @@ def start_vm(request, task_id):
             ip_address=ip_address,
             status='running',
             started_at=timezone.now(),
-            expires_at=timezone.now() + timedelta(hours=1)
+            expires_at=timezone.now() + timedelta(hours=1),
+            generated_flags={}   # инициализируем пустой словарь
         )
-        time.sleep(20)
-        # === 5. Автоматическая генерация и вставка уникальных флагов ===
+
+        # === 5. Генерация уникальных флагов и вставка в файлы ===
         inserted_count = 0
+        generated_flags_dict = {}
+
+        time.sleep(20)  # ждём запуска Guest Agent
+
         for flag_obj in task.flags.all():
             if flag_obj.file_path:
                 # Генерируем уникальный флаг для этого студента
@@ -95,16 +101,25 @@ def start_vm(request, task_id):
 
                 try:
                     command = f"echo '{unique_flag}' > {flag_obj.file_path}"
-                    proxmox_client.exec_command(new_vm_id, command)
-                    inserted_count += 1
-                    print(f"[VM] Уникальный флаг вставлен в {flag_obj.file_path} для {request.user.username}")
+                    success = proxmox_client.exec_command(new_vm_id, command)
+                    
+                    if success:
+                        inserted_count += 1
+                        generated_flags_dict[str(flag_obj.id)] = unique_flag
+                        print(f"[VM] Флаг вставлен в {flag_obj.file_path} для {request.user.username}")
+                    else:
+                        print(f"[VM] Не удалось вставить флаг в {flag_obj.file_path}")
                 except Exception as e:
-                    print(f"[VM] Ошибка вставки флага в {flag_obj.file_path}: {e}")
+                    print(f"[VM] Ошибка вставки флага: {e}")
 
-        # Сообщение пользователю
+        # Сохраняем сгенерированные флаги в VMInstance
+        vm_instance.generated_flags = generated_flags_dict
+        vm_instance.save()
+
+        # Финальное сообщение
         success_msg = f"✅ Виртуальная машина успешно запущена! IP: {ip_address}"
         if inserted_count > 0:
-            success_msg += f" | Вставлено уникальных флагов: {inserted_count}"
+            success_msg += f" | Вставлено флагов: {inserted_count}"
 
         messages.success(request, success_msg)
 
@@ -118,7 +133,6 @@ def start_vm(request, task_id):
             pass
 
     return redirect('task_detail', task_id=task.id)
-
 
 
 @login_required
