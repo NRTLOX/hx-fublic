@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+import markdown
 
 class Task(models.Model):
     TYPE_CHOICES = [
@@ -8,7 +9,16 @@ class Task(models.Model):
     ]
 
     title = models.CharField(max_length=200, verbose_name="Название задания")
-    description = models.TextField(verbose_name="Описание")
+    description = models.TextField(verbose_name="Краткое описание", blank=True)
+    
+    # Новое большое поле README в Markdown
+    readme = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="README (Markdown)",
+        help_text="Полное описание задания с форматированием. Поддерживает Markdown, картинки, код и т.д."
+    )
+    
     task_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='file', verbose_name="Тип задания")
     
     # Для файловых заданий
@@ -31,6 +41,16 @@ class Task(models.Model):
     def __str__(self):
         return f"{self.title} ({self.get_task_type_display()})"
 
+    def get_readme_html(self):
+        """Преобразует Markdown в безопасный HTML"""
+        if not self.readme:
+            return ''
+        # Расширения: fenced_code (```), tables, nl2br
+        return markdown.markdown(
+            self.readme, 
+            extensions=['fenced_code', 'tables', 'nl2br', 'attr_list']
+        )
+
 
 class Flag(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='flags')
@@ -45,6 +65,7 @@ class Flag(models.Model):
     def __str__(self):
         return f"Флаг для {self.task.title}"
 
+
 class Submission(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Пользователь")
     task = models.ForeignKey(Task, on_delete=models.CASCADE, verbose_name="Задание")
@@ -57,7 +78,6 @@ class Submission(models.Model):
         verbose_name = "Сабмит"
         verbose_name_plural = "Сабмиты"
         ordering = ['-submitted_at']
-        # Один пользователь может сдать один флаг только один раз успешно
         unique_together = ('user', 'flag')
 
     def __str__(self):

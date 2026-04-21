@@ -1,9 +1,10 @@
 {% extends 'core/base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="container">
+<div class="container mt-4">
     <div class="row justify-content-center">
-        <div class="col-lg-9">
+        <div class="col-lg-10">
 
             <!-- Заголовок задания -->
             <div class="card shadow mb-4">
@@ -21,16 +22,29 @@
                         </div>
                     </div>
 
+                    <!-- Краткое описание -->
+                    {% if task.description %}
                     <h5 class="mt-3">Описание задания:</h5>
-                    <p class="lead">{{ task.description }}</p>
+                    <p class="lead">{{ task.description|linebreaks }}</p>
+                    {% endif %}
+
+                    <!-- ==================== README (Markdown) ==================== -->
+                    {% if task.readme %}
+                    <div class="mt-5">
+                        <h4 class="text-white border-bottom border-secondary pb-2">README</h4>
+                        <div class="readme-content bg-dark p-4 rounded border border-secondary">
+                            {{ task.get_readme_html|safe }}
+                        </div>
+                    </div>
+                    {% endif %}
 
                     <!-- ==================== ФАЙЛОВОЕ ЗАДАНИЕ ==================== -->
                     {% if task.task_type == 'file' %}
                     {% if task.file %}
-                    <div class="mt-4 p-4 border rounded bg-light">
-                        <h5>Скачать файл:</h5>
-                        <a href="{{ task.file.url }}" class="btn btn-primary btn-lg" download>
-                            ⬇️ Скачать файл задания
+                    <div class="mt-4 p-4 border border-secondary rounded bg-dark">
+                        <h5 class="text-white mb-3">Скачать файл:</h5>
+                        <a href="{{ task.file.url }}" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-download me-2"></i> Скачать файл задания
                         </a>
                     </div>
                     {% endif %}
@@ -38,16 +52,14 @@
 
                     <!-- ==================== VM ЗАДАНИЕ ==================== -->
                     {% if task.task_type == 'vm' %}
-                    <div id="vm-section">
-                        {% include 'vms/vm_interface.html' %}
-                    </div>
+                    {% include 'vms/vm_interface.html' with task=task %}
                     {% endif %}
 
-                    <!-- ==================== СДАЧА ФЛАГОВ ==================== -->
+                    <!-- Флаги -->
                     <div class="mt-5">
-                        <h5>Сдать флаги</h5>
+                        <h5 class="text-white">Сдать флаг(и):</h5>
                         {% for flag in task.flags.all %}
-                        <div class="mb-4 p-3 border rounded">
+                        <div class="mt-3 p-3 border border-secondary rounded bg-dark">
                             {% if flag.hint %}
                             <div class="alert alert-info py-2">
                                 <strong>Подсказка:</strong> {{ flag.hint }}
@@ -59,8 +71,8 @@
                                 <div class="input-group">
                                     <input type="text" 
                                            name="flag" 
-                                           class="form-control form-control-lg"
-                                           placeholder="flag{...}"
+                                           class="form-control form-control-lg bg-dark text-white border-secondary"
+                                           placeholder="flag{...}" 
                                            required>
                                     <input type="hidden" name="flag_id" value="{{ flag.id }}">
                                     <button type="submit" class="btn btn-success btn-lg">
@@ -74,7 +86,7 @@
                 </div>
             </div>
 
-            <div class="text-center">
+            <div class="text-center mt-4">
                 <a href="{% url 'task_list' %}" class="btn btn-secondary">← Назад к списку заданий</a>
             </div>
 
