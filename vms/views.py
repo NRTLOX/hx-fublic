@@ -7,6 +7,9 @@ import time
 from tasks.models import Task
 from .models import UserVMInstance
 from .proxmox_client import proxmox_client
+import random
+import string
+
 
 def get_next_free_ip(user):
     """Находит следующий свободный IP в личной подсети пользователя"""
@@ -45,31 +48,33 @@ def generate_vm_id(user, task):
     vm_id_str = f"8{user.id}{task.id}"
     return int(vm_id_str)
 
+
+
 @login_required
 def start_vm(request, task_id):
     task = get_object_or_404(Task, id=task_id, task_type='vm', is_active=True)
 
-    # Удаляем старые записи, если есть
+    # Удаляем старую VM запись
     UserVMInstance.objects.filter(user=request.user, task=task).delete()
 
     ip_address = get_next_free_ip(request.user)
     if not ip_address:
-        messages.error(request, "Все IP-адреса заняты.")
+        messages.error(request, "Все IP-адреса в твоей подсети заняты.")
         return redirect('task_detail', task_id=task.id)
 
     new_vm_id = generate_vm_id(request.user, task)
 
     try:
-        # Клонируем шаблон (без сообщений пользователю)
+        # 1. Клонируем шаблон
         proxmox_client.clone_vm(task.proxmox_template_id, new_vm_id)
 
-        # Устанавливаем IP
+        # 2. Устанавливаем IP
         proxmox_client.set_ip(new_vm_id, ip_address)
 
-        # Запускаем машину
+        # 3. Запускаем машину
         proxmox_client.start_vm(new_vm_id)
 
-        # Сохраняем в базу
+        # 4. Сохраняем VM в базу
         vm_instance = UserVMInstance.objects.create(
             user=request.user,
             task=task,
@@ -79,14 +84,34 @@ def start_vm(request, task_id):
             started_at=timezone.now(),
             expires_at=timezone.now() + timedelta(hours=1)
         )
+        time.sleep(20)
+        # === 5. Автоматическая генерация и вставка уникальных флагов ===
+        inserted_count = 0
+        for flag_obj in task.flags.all():
+            if flag_obj.file_path:
+                # Генерируем уникальный флаг для этого студента
+                random_part = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(32))
+                unique_flag = f"flag{{{random_part}}}"
 
-        # Только финальное сообщение
-        messages.success(request, f"✅ Виртуальная машина успешно запущена! IP: {ip_address}")
+                try:
+                    command = f"echo '{unique_flag}' > {flag_obj.file_path}"
+                    proxmox_client.exec_command(new_vm_id, command)
+                    inserted_count += 1
+                    print(f"[VM] Уникальный флаг вставлен в {flag_obj.file_path} для {request.user.username}")
+                except Exception as e:
+                    print(f"[VM] Ошибка вставки флага в {flag_obj.file_path}: {e}")
+
+        # Сообщение пользователю
+        success_msg = f"✅ Виртуальная машина успешно запущена! IP: {ip_address}"
+        if inserted_count > 0:
+            success_msg += f" | Вставлено уникальных флагов: {inserted_count}"
+
+        messages.success(request, success_msg)
 
     except Exception as e:
         print(f"[ERROR] start_vm: {str(e)}")
         messages.error(request, "Не удалось запустить виртуальную машину. Обратитесь к администратору.")
-        # Попытка очистки
+
         try:
             proxmox_client.destroy_vm(new_vm_id)
         except:

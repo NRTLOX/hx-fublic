@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 import markdown
+import random
+import string
 
 class Task(models.Model):
     TYPE_CHOICES = [
@@ -10,7 +12,7 @@ class Task(models.Model):
 
     title = models.CharField(max_length=200, verbose_name="Название задания")
     description = models.TextField(verbose_name="Краткое описание", blank=True)
-    
+   
     # Новое большое поле README в Markdown
     readme = models.TextField(
         blank=True,
@@ -18,15 +20,15 @@ class Task(models.Model):
         verbose_name="README (Markdown)",
         help_text="Полное описание задания с форматированием. Поддерживает Markdown, картинки, код и т.д."
     )
-    
+   
     task_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='file', verbose_name="Тип задания")
-    
+   
     # Для файловых заданий
     file = models.FileField(upload_to='tasks/files/', blank=True, null=True, verbose_name="Файл для скачивания")
-    
+   
     # Для VM заданий
     proxmox_template_id = models.IntegerField(blank=True, null=True, verbose_name="ID шаблона в Proxmox")
-    
+   
     points = models.PositiveIntegerField(default=100, verbose_name="Баллы")
     is_active = models.BooleanField(default=True, verbose_name="Активно")
 
@@ -45,18 +47,32 @@ class Task(models.Model):
         """Преобразует Markdown в безопасный HTML"""
         if not self.readme:
             return ''
-        # Расширения: fenced_code (```), tables, nl2br
         return markdown.markdown(
-            self.readme, 
+            self.readme,
             extensions=['fenced_code', 'tables', 'nl2br', 'attr_list']
         )
 
-
 class Flag(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='flags')
-    flag_value = models.CharField(max_length=255, verbose_name="Флаг")
+    
+    # Поле можно оставлять пустым — флаг будет генерироваться автоматически при запуске VM
+    flag_value = models.CharField(
+        max_length=255, 
+        blank=True, 
+        null=True, 
+        verbose_name="Флаг (оставь пустым — будет генерироваться автоматически)"
+    )
+    
     hint = models.CharField(max_length=300, blank=True, verbose_name="Подсказка (где искать флаг)")
     description = models.CharField(max_length=200, blank=True, verbose_name="Описание для админа")
+    
+    # Путь, куда вставлять флаг внутри VM
+    file_path = models.CharField(
+        max_length=300, 
+        blank=True, 
+        null=True, 
+        verbose_name="Путь к файлу в VM (для авто-вставки)"
+    )
 
     class Meta:
         verbose_name = "Флаг"

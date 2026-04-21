@@ -6,7 +6,7 @@ from .models import Task, Flag, Submission
 class FlagInline(admin.TabularInline):
     model = Flag
     extra = 1
-    fields = ['flag_value', 'hint', 'description']
+    fields = ['flag_value', 'hint', 'description', 'file_path']   # добавили file_path
 
 
 @admin.register(Task)
@@ -29,8 +29,7 @@ class TaskAdmin(admin.ModelAdmin):
             'fields': ('file', 'proxmox_template_id')
         }),
     )
-    
-    # Большое текстовое поле для readme
+   
     formfield_overrides = {
         models.TextField: {'widget': admin.widgets.AdminTextareaWidget(attrs={'rows': 20})},
     }
