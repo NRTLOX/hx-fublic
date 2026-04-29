@@ -1,33 +1,35 @@
 {% extends 'core/base.html' %}
-
 {% block content %}
 <div class="container">
     <h1 class="mb-4">Доступные задания</h1>
-    
+   
     <div class="row">
         {% for task in tasks %}
         <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body position-relative">
-                    
+            <div class="card h-100 shadow-sm d-flex flex-column">
+                <div class="card-body">
+                   
                     <!-- Статус "Выполнено" -->
                     {% if task.id in solved_task_ids %}
                     <span class="position-absolute top-0 end-0 badge bg-success mt-2 me-2">
                         ✓ Выполнено
                     </span>
                     {% endif %}
-
+                   
                     <!-- Тип задания -->
                     {% if task.task_type == 'file' %}
                         <span class="badge bg-primary mb-2">Файл на взлом</span>
                     {% else %}
                         <span class="badge bg-danger mb-2">Виртуальная машина</span>
                     {% endif %}
-
+                   
                     <h5 class="card-title">{{ task.title }}</h5>
                     <p class="card-text text-muted">{{ task.description|truncatewords:25 }}</p>
-                    
-                    <div class="d-flex justify-content-between align-items-center mt-3">
+                </div>
+               
+                <!-- ==================== ФУТЕР С КНОПКОЙ И БАЛЛАМИ ==================== -->
+                <div class="card-footer bg-transparent border-0 mt-auto">
+                    <div class="d-flex justify-content-between align-items-center">
                         <span class="badge bg-success">{{ task.points }} баллов</span>
                         <a href="{% url 'task_detail' task.id %}" class="btn btn-primary btn-sm">
                             Перейти к заданию →
