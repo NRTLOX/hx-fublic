@@ -6,7 +6,7 @@ from .models import Task, Flag, Submission
 class FlagInline(admin.TabularInline):
     model = Flag
     extra = 1
-    fields = ['flag_value', 'hint', 'description', 'file_path']   # добавили file_path
+    fields = ['flag_value', 'hint', 'description', 'file_path']
 
 
 @admin.register(Task)
@@ -16,23 +16,20 @@ class TaskAdmin(admin.ModelAdmin):
     search_fields = ['title', 'description']
     inlines = [FlagInline]
 
-    # Делаем поле README большим и удобным
     fieldsets = (
         (None, {
             'fields': ('title', 'task_type', 'points', 'is_active')
         }),
         ('Описание', {
-            'fields': ('description', 'readme'),
-            'description': 'Краткое описание + полное README в формате Markdown'
+            'fields': ('description', 'readme_file'),   # ← теперь файл, а не textarea
+            'description': 'Краткое описание + файл README (HTML или PDF)'
         }),
         ('Файлы и Proxmox', {
             'fields': ('file', 'proxmox_template_id')
         }),
     )
-   
-    formfield_overrides = {
-        models.TextField: {'widget': admin.widgets.AdminTextareaWidget(attrs={'rows': 20})},
-    }
+
+    # Убираем старый formfield_overrides для readme (больше не нужен)
 
 
 @admin.register(Submission)
