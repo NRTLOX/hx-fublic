@@ -3,7 +3,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, CustomAuthenticationForm
 from django.db.models import Q
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -40,7 +40,7 @@ def register_view(request):
 
 def login_view(request):
     if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
+        form = CustomAuthenticationForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             if not user.is_approved:
@@ -51,7 +51,7 @@ def login_view(request):
         else:
             messages.error(request, 'Неверное имя пользователя или пароль.')
     else:
-        form = AuthenticationForm()
+        form = CustomAuthenticationForm()
     return render(request, 'core/login.html', {'form': form})
 
 def logout_view(request):

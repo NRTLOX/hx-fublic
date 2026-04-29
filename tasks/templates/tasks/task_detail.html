@@ -1,17 +1,15 @@
 {% extends 'core/base.html' %}
 {% load static %}
-
 {% block content %}
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-lg-10">
-
             <!-- Заголовок задания -->
             <div class="card shadow mb-4">
                 <div class="card-header text-white {% if task.task_type == 'file' %}bg-primary{% else %}bg-danger{% endif %}">
                     <h3 class="mb-0">{{ task.title }}</h3>
                 </div>
-                
+               
                 <div class="card-body">
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -28,9 +26,16 @@
                     <p class="lead">{{ task.description|linebreaks }}</p>
                     {% endif %}
 
-                    <!-- ==================== README (Markdown) ==================== -->
-                    {% if task.readme %}
-                    <div class="mt-5">
+                    <!-- ==================== КНОПКА ИНСТРУКЦИЯ ==================== -->
+                    {% if task.readme_file %}
+                    <div class="mt-3 mb-4">
+                        <a href="{{ task.readme_file.url }}" target="_blank" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-file-earmark-text me-2"></i> Инструкция по прохождению
+                        </a>
+                    </div>
+                    {% elif task.readme %}
+                    <!-- Старый Markdown (для обратной совместимости) -->
+                    <div class="mt-4">
                         <h4 class="text-white border-bottom border-secondary pb-2">README</h4>
                         <div class="readme-content bg-dark p-4 rounded border border-secondary">
                             {{ task.get_readme_html|safe }}
@@ -41,10 +46,10 @@
                     <!-- ==================== ФАЙЛОВОЕ ЗАДАНИЕ ==================== -->
                     {% if task.task_type == 'file' %}
                     {% if task.file %}
-                    <div class="mt-4 p-4 border border-secondary rounded bg-dark">
-                        <h5 class="text-white mb-3">Скачать файл:</h5>
+                    <div class="mt-4 p-4 border border-secondary rounded bg-dark text-center">
+                        <h5 class="text-white mb-3">Скачать файл задания:</h5>
                         <a href="{{ task.file.url }}" class="btn btn-outline-primary btn-lg">
-                            <i class="bi bi-download me-2"></i> Скачать файл задания
+                            <i class="bi bi-download me-2"></i> Скачать файл
                         </a>
                     </div>
                     {% endif %}
@@ -65,14 +70,14 @@
                                 <strong>Подсказка:</strong> {{ flag.hint }}
                             </div>
                             {% endif %}
-                            
+                           
                             <form method="POST" action="{% url 'submit_flag' task.id %}">
                                 {% csrf_token %}
                                 <div class="input-group">
-                                    <input type="text" 
-                                           name="flag" 
+                                    <input type="text"
+                                           name="flag"
                                            class="form-control form-control-lg bg-dark text-white border-secondary"
-                                           placeholder="flag{...}" 
+                                           placeholder="flag{...}"
                                            required>
                                     <input type="hidden" name="flag_id" value="{{ flag.id }}">
                                     <button type="submit" class="btn btn-success btn-lg">
@@ -89,7 +94,6 @@
             <div class="text-center mt-4">
                 <a href="{% url 'task_list' %}" class="btn btn-secondary">← Назад к списку заданий</a>
             </div>
-
         </div>
     </div>
 </div>

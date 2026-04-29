@@ -129,3 +129,18 @@ body {
     color: #c4b5fd;
     text-decoration: underline;
 }
+
+/* Фиолетовые outline-кнопки (используем переменные из темы) */
+.btn-outline-purple {
+    color: var(--accent-purple);
+    border-color: var(--accent-purple);
+    background-color: transparent;
+}
+
+.btn-outline-purple:hover,
+.btn-outline-purple:focus,
+.btn-outline-purple:active {
+    color: white !important;
+    background-color: var(--accent-purple-dark) !important;
+    border-color: var(--accent-purple-dark) !important;
+}
