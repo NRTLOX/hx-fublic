@@ -83,7 +83,7 @@ def start_vm(request, task_id):
             ip_address=ip_address,
             status='running',
             started_at=timezone.now(),
-            expires_at=timezone.now() + timedelta(hours=1),
+            expires_at=timezone.now() + timedelta(minutes=60),
             generated_flags={}   # инициализируем пустой словарь
         )
 
@@ -117,7 +117,7 @@ def start_vm(request, task_id):
         vm_instance.save()
 
         # Финальное сообщение
-        success_msg = f"✅ Виртуальная машина успешно запущена! IP: {ip_address}"
+        success_msg = f"Виртуальная машина успешно запущена! IP: {ip_address}"
         if inserted_count > 0:
             success_msg += f" | Вставлено флагов: {inserted_count}"
 
@@ -153,7 +153,7 @@ def stop_vm(request, task_id):
         vm_instance.status = 'destroyed'
         vm_instance.save()
 
-        messages.success(request, "✅ Виртуальная машина успешно остановлена и удалена.")
+        messages.success(request, "Виртуальная машина успешно остановлена и удалена.")
 
     except Exception as e:
         print(f"[ERROR] stop_vm: {str(e)}")
