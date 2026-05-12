@@ -45,7 +45,7 @@ def generate_vm_id(user, task):
     Генерирует уникальный ID для VM в формате: 8 + ID пользователя + ID задания
     Пример: пользователь 7, задание 12 → 8712
     """
-    vm_id_str = f"8{user.id}{task.id}"
+    vm_id_str = f"8{user.id}00{task.id}"
     return int(vm_id_str)
 
 

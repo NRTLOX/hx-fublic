@@ -9,6 +9,7 @@ class Task(models.Model):
     TYPE_CHOICES = [
         ('file', 'Файл на взлом'),
         ('vm', 'Виртуальная машина'),
+        ('other', 'Другое'),
     ]
 
     title = models.CharField(max_length=200, verbose_name="Название задания")
