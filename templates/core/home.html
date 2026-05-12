@@ -3,7 +3,6 @@
 {% block content %}
 <div class="text-center mt-5">
     <h1 class="display-5">Добро пожаловать, {{ user.username }}!</h1>
-    <p class="lead mb-4">Вы успешно авторизованы и одобрены администратором.</p>
     
     <div class="mt-4">
         <a href="{% url 'task_list' %}" class="btn btn-lg btn-primary me-3">
