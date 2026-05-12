@@ -1,144 +1,139 @@
 {% extends "admin/base_site.html" %}
 {% load static %}
 
-{% block title %}Мониторинг | HX CTF{% endblock %}
+{% block title %}Мониторинг системы{% endblock %}
 
 {% block extrastyle %}
 <style>
     body { background: #0f172a !important; color: #f8fafc; }
-    .dashboard-card {
-        background: #1e293b;
-        border-radius: 16px;
-        padding: 24px;
-        border: 1px solid #334155;
-        margin-bottom: 24px;
+    
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1.7fr 1fr;   /* ← Верхние панели выше */
+        gap: 20px;
+        height: calc(100vh - 110px);
+        padding: 20px 30px;
     }
-    .metric-value { font-size: 32px; font-weight: 700; color: #22d3ee; }
-    .section-title { color: #f8fafc; font-size: 20px; font-weight: 600; margin-bottom: 20px; }
-    .chart-container { position: relative; height: 220px; }
+    
+    .panel {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 16px;
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    
+    .panel-header {
+        font-size: 17px;
+        font-weight: 600;
+        color: #f8fafc;
+        margin-bottom: 8px;
+    }
+    
+    .chart-container {
+        flex: 1;
+        position: relative;
+        min-height: 260px;
+    }
+    
+    .metric-big {
+        font-size: 48px;
+        font-weight: 700;
+        color: #22d3ee;
+        line-height: 1;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid" style="padding: 30px;">
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 style="margin:0; color:#f8fafc;">Мониторинг системы</h2>
-            <p style="color:#64748b; margin:4px 0 0;">Последнее обновление: {{ last_updated }}</p>
-        </div>
-        <a href="{% url 'admin:index' %}" class="btn btn-outline-light">← Назад</a>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3" style="padding: 0 30px;">
+        <h2 style="margin:0; color:#f8fafc; font-size:24px;">Мониторинг системы</h2>
+        <span style="color:#64748b; font-size:13px;">Обновление каждые 10 сек • История 15 мин</span>
     </div>
 
-    <h4 class="section-title">🖥️ Proxmox Node — {{ proxmox.node_name }}</h4>
-    
-    <div class="row">
+    <div class="dashboard-grid">
+        
         <!-- CPU -->
-        <div class="col-md-4">
-            <div class="dashboard-card">
-                <h6 style="color:#94a3b8;">CPU Usage</h6>
-                <div class="chart-container"><canvas id="cpuChart"></canvas></div>
-                <div style="text-align:center; margin-top:10px;">
-                    <span class="metric-value">{{ proxmox.cpu_percent }}%</span>
-                </div>
+        <div class="panel">
+            <div class="panel-header">CPU</div>
+            <div class="d-flex justify-content-between mb-2" style="font-size:14px;">
+                <div><span style="color:#22d3ee">●</span> Proxmox: <strong>{{ cpu_proxmox }}%</strong></div>
+                <div><span style="color:#a78bfa">●</span> Django: <strong>{{ cpu_django }}%</strong></div>
             </div>
+            <div class="chart-container"><canvas id="cpuChart"></canvas></div>
         </div>
 
-        <!-- RAM -->
-        <div class="col-md-4">
-            <div class="dashboard-card">
-                <h6 style="color:#94a3b8;">RAM ({{ proxmox.mem_used }} / {{ proxmox.mem_total }} GB)</h6>
-                <div class="chart-container"><canvas id="ramChart"></canvas></div>
-                <div style="text-align:center; margin-top:10px;">
-                    <span class="metric-value">{{ proxmox.mem_percent }}%</span>
-                </div>
+        <!-- ОЗУ -->
+        <div class="panel">
+            <div class="panel-header">ОЗУ</div>
+            <div class="d-flex justify-content-between mb-2" style="font-size:14px;">
+                <div><span style="color:#22d3ee">●</span> Proxmox: <strong>{{ ram_proxmox }}%</strong></div>
+                <div><span style="color:#a78bfa">●</span> Django: <strong>{{ ram_django }}%</strong></div>
             </div>
+            <div class="chart-container"><canvas id="ramChart"></canvas></div>
         </div>
 
-        <!-- Load Average -->
-        <div class="col-md-4">
-            <div class="dashboard-card">
-                <h6 style="color:#94a3b8;">Load Average</h6>
-                <div class="chart-container"><canvas id="loadChart"></canvas></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mt-4">
-        <div class="col-md-8">
-            <h4 class="section-title">🐍 Django Server</h4>
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="dashboard-card text-center">
-                        <div class="metric-value">{{ django.cpu_percent }}%</div>
-                        <div style="color:#94a3b8;">CPU</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="dashboard-card text-center">
-                        <div class="metric-value">{{ django.mem_percent }}%</div>
-                        <div style="color:#94a3b8;">RAM</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="dashboard-card text-center">
-                        <div class="metric-value">{{ django.disk_percent }}%</div>
-                        <div style="color:#94a3b8;">Disk</div>
-                    </div>
-                </div>
-            </div>
+        <!-- Пользователи -->
+        <div class="panel d-flex flex-column justify-content-center text-center">
+            <div class="panel-header">Пользователи</div>
+            <div class="metric-big">{{ stats.total_users }}</div>
+            <div style="color:#94a3b8; font-size:15px;">Всего • {{ stats.approved_users }} одобренных</div>
         </div>
 
-        <div class="col-md-4">
-            <h4 class="section-title">📊 Платформа</h4>
-            <div class="dashboard-card">
-                <div class="d-flex justify-content-between mb-2"><span>Пользователи</span> <strong>{{ stats.total_users }}</strong></div>
-                <div class="d-flex justify-content-between mb-2"><span>Одобренных</span> <strong>{{ stats.approved_users }}</strong></div>
-                <div class="d-flex justify-content-between mb-2"><span>Активных VM</span> <strong>{{ stats.active_vms }}</strong></div>
-                <div class="d-flex justify-content-between"><span>Активных заданий</span> <strong>{{ stats.total_tasks }}</strong></div>
-            </div>
+        <!-- Запущенные машины -->
+        <div class="panel d-flex flex-column justify-content-center text-center">
+            <div class="panel-header">Запущенные машины</div>
+            <div class="metric-big">{{ stats.active_vms }}</div>
+            <div style="color:#94a3b8; font-size:15px;">Активных VM</div>
         </div>
+
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// CPU Donut
+const timestamps = {{ timestamps|safe }};
+const cpuData = {{ cpu_data|safe }};
+const ramData = {{ ram_data|safe }};
+
+const commonOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+        x: { grid: { color: '#334155' }, ticks: { color: '#64748b', maxTicksLimit: 6 } },
+        y: { grid: { color: '#334155' }, ticks: { color: '#64748b' }, beginAtZero: true, max: 100 }
+    },
+    plugins: { legend: { display: true, position: 'top' } }
+};
+
 new Chart(document.getElementById('cpuChart'), {
-    type: 'doughnut',
+    type: 'line',
     data: {
-        labels: ['Использовано', 'Свободно'],
-        datasets: [{ data: [{{ proxmox.cpu_percent }}, {{ proxmox.cpu_free }}], 
-                    backgroundColor: ['#22d3ee', '#334155'], borderWidth: 0 }]
+        labels: timestamps,
+        datasets: [
+            { label: 'Proxmox', data: cpuData.map(d => d[0]), borderColor: '#22d3ee', tension: 0.3, fill: false },
+            { label: 'Django', data: cpuData.map(d => d[1]), borderColor: '#a78bfa', tension: 0.3, fill: false }
+        ]
     },
-    options: { cutout: '75%', plugins: { legend: { display: false } } }
+    options: commonOptions
 });
 
-// RAM Donut
 new Chart(document.getElementById('ramChart'), {
-    type: 'doughnut',
+    type: 'line',
     data: {
-        labels: ['Использовано', 'Свободно'],
-        datasets: [{ data: [{{ proxmox.mem_percent }}, {{ proxmox.mem_free }}], 
-                    backgroundColor: ['#22d3ee', '#334155'], borderWidth: 0 }]
+        labels: timestamps,
+        datasets: [
+            { label: 'Proxmox', data: ramData.map(d => d[0]), borderColor: '#22d3ee', tension: 0.3, fill: false },
+            { label: 'Django', data: ramData.map(d => d[1]), borderColor: '#a78bfa', tension: 0.3, fill: false }
+        ]
     },
-    options: { cutout: '75%', plugins: { legend: { display: false } } }
+    options: commonOptions
 });
 
-// Load Average
-new Chart(document.getElementById('loadChart'), {
-    type: 'bar',
-    data: {
-        labels: {{ load_labels|safe }},
-        datasets: [{ label: 'Load Average', data: {{ load_values|safe }}, 
-                    backgroundColor: '#22d3ee', borderRadius: 6 }]
-    },
-    options: { scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
-});
-
-// Автообновление каждые 10 секунд
-setInterval(() => {
-    location.reload();
-}, 10000);
+setInterval(() => location.reload(), 10000);
 </script>
 {% endblock %}
