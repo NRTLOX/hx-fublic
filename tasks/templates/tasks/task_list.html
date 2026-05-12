@@ -17,10 +17,13 @@
                     {% endif %}
                    
                     <!-- Тип задания -->
+
                     {% if task.task_type == 'file' %}
                         <span class="badge bg-primary mb-2">Файл на взлом</span>
-                    {% else %}
+                    {% elif task.task_type == 'vm' %}
                         <span class="badge bg-danger mb-2">Виртуальная машина</span>
+		    {% elif task.task_type == 'other' %}
+		    	<span class="badge bg-primary mb-2">Другое</span>
                     {% endif %}
                    
                     <h5 class="card-title">{{ task.title }}</h5>

@@ -44,7 +44,7 @@
                     {% endif %}
 
                     <!-- ==================== ФАЙЛОВОЕ ЗАДАНИЕ ==================== -->
-                    {% if task.task_type == 'file' %}
+                    {% if task.task_type == 'file' or task.task_type == 'other' %}
                     {% if task.file %}
                     <div class="mt-4 p-4 border border-secondary rounded bg-dark text-center">
                         <h5 class="text-white mb-3">Скачать файл задания:</h5>
