@@ -1,0 +1,93 @@
+/* === Тёмная тема для Django Admin (в стиле Black Dashboard) === */
+
+:root {
+    --primary: #22d3ee;
+    --bg-dark: #0f172a;
+    --bg-card: #1e293b;
+    --text: #f8fafc;
+    --text-muted: #64748b;
+    --border: #334155;
+}
+
+/* Основной фон */
+body {
+    background: var(--bg-dark) !important;
+    color: var(--text) !important;
+}
+
+/* Шапка */
+#header {
+    background: #1e293b !important;
+    border-bottom: 1px solid var(--border) !important;
+}
+
+#branding h1, #branding h1 a:link, #branding h1 a:visited {
+    color: var(--primary) !important;
+}
+
+/* Боковое меню */
+#nav-sidebar {
+    background: #1e293b !important;
+    border-right: 1px solid var(--border) !important;
+}
+
+#nav-sidebar a {
+    color: #94a3b8 !important;
+}
+
+#nav-sidebar a:hover, #nav-sidebar .current-model {
+    background: #334155 !important;
+    color: var(--primary) !important;
+}
+
+/* Карточки и таблицы */
+.module {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 12px;
+}
+
+.module h2, .module caption {
+    background: #334155 !important;
+    color: var(--primary) !important;
+}
+
+/* Кнопки */
+.button, input[type=submit], button {
+    background: var(--primary) !important;
+    color: #0f172a !important;
+    border: none !important;
+    border-radius: 8px;
+}
+
+.button:hover, input[type=submit]:hover {
+    background: #67e8f9 !important;
+}
+
+/* Таблицы */
+table {
+    background: var(--bg-card) !important;
+    color: var(--text) !important;
+}
+
+thead th {
+    background: #334155 !important;
+    color: #f8fafc !important;
+}
+
+tr:hover {
+    background: #334155 !important;
+}
+
+/* Формы */
+input, select, textarea {
+    background: #0f172a !important;
+    color: var(--text) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
+}
