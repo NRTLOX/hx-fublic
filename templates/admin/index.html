@@ -1,0 +1,20 @@
+{% extends "admin/index.html" %}
+{% load static %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <a href="{% url 'admin_monitoring' %}" 
+       style="display: inline-block; 
+              background: #22d3ee; 
+              color: #0f172a; 
+              padding: 12px 24px; 
+              border-radius: 10px; 
+              text-decoration: none; 
+              font-weight: 600;
+              font-size: 16px;">
+        Мониторинг системы
+    </a>
+</div>
+
+{{ block.super }}
+{% endblock %}
