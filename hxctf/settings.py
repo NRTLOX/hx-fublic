@@ -8,9 +8,7 @@ env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-change-me-in-production')
-
 DEBUG = True
-
 ALLOWED_HOSTS = ['*']  # потом заменишь на свой домен
 
 INSTALLED_APPS = [
@@ -22,7 +20,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'whitenoise.runserver_nostatic',
 
-    # Наши приложения
     'core',
     'tasks',
     'vms',
@@ -52,6 +49,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.static',   # ← добавил
             ],
         },
     },
@@ -59,7 +57,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'hxctf.wsgi.application'
 
-# База данных (пока SQLite — удобно для начала)
+# База данных
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -79,6 +77,7 @@ TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 USE_TZ = True
 
+# ====================== STATIC & MEDIA ======================
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
@@ -89,10 +88,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Кастомный пользователь
+# ====================== AUTH ======================
 AUTH_USER_MODEL = 'core.User'
-
-# Redirects
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
 LOGIN_URL = '/login/'
@@ -103,3 +100,9 @@ PROXMOX_NODE = env('PROXMOX_NODE')
 PROXMOX_TOKEN_ID = env('PROXMOX_TOKEN_ID')
 PROXMOX_TOKEN_SECRET = env('PROXMOX_TOKEN_SECRET')
 
+
+# ====================== Sessions ====================
+
+SESSION_COOKIE_AGE = 60 * 30          # 30 минут в секундах
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_SAVE_EVERY_REQUEST = True
