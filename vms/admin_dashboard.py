@@ -7,20 +7,22 @@ from datetime import datetime
 import json
 from collections import deque
 
+from django.contrib.sessions.models import Session
+from django.utils import timezone
+
 from vms.models import UserVMInstance
 from tasks.models import Task
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-# История (30 точек = 15 минут)
+# История для графиков
 HISTORY_SIZE = 30
 cpu_history = deque(maxlen=HISTORY_SIZE)
 ram_history = deque(maxlen=HISTORY_SIZE)
 timestamps = deque(maxlen=HISTORY_SIZE)
-
-# Флаг, чтобы заполнить историю только один раз
 history_initialized = False
+
 
 @staff_member_required
 def proxmox_dashboard(request):
@@ -28,7 +30,7 @@ def proxmox_dashboard(request):
 
     now = datetime.now().strftime("%H:%M:%S")
 
-    # Получаем текущие значения
+    # ==================== Proxmox ====================
     try:
         proxmox = ProxmoxAPI(
             host=settings.PROXMOX_HOST,
@@ -50,6 +52,7 @@ def proxmox_dashboard(request):
         cpu_proxmox = 0
         ram_proxmox = 0
 
+    # ==================== Django ====================
     try:
         cpu_django = round(psutil.cpu_percent(interval=0.3), 1)
         mem = psutil.virtual_memory()
@@ -58,7 +61,7 @@ def proxmox_dashboard(request):
         cpu_django = 0
         ram_django = 0
 
-    # ==================== Заполняем историю (только один раз) ====================
+    # ==================== История для графиков ====================
     if not history_initialized:
         for _ in range(HISTORY_SIZE):
             cpu_history.append([cpu_proxmox, cpu_django])
@@ -81,12 +84,19 @@ def proxmox_dashboard(request):
     except:
         stats = {'total_users': 0, 'approved_users': 0, 'active_vms': 0, 'total_tasks': 0}
 
+    # ==================== Активные сессии (онлайн) ====================
+    try:
+        active_sessions = Session.objects.filter(expire_date__gt=timezone.now()).count()
+    except:
+        active_sessions = 0
+
     context = {
         'cpu_proxmox': cpu_proxmox,
         'cpu_django': cpu_django,
         'ram_proxmox': ram_proxmox,
         'ram_django': ram_django,
         'stats': stats,
+        'active_sessions': active_sessions,
         'last_updated': now,
         'timestamps': json.dumps(list(timestamps)),
         'cpu_data': json.dumps(list(cpu_history)),

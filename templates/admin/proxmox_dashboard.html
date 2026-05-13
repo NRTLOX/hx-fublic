@@ -78,11 +78,17 @@
         </div>
 
         <!-- Пользователи -->
-        <div class="panel d-flex flex-column justify-content-center text-center">
-            <div class="panel-header">Пользователи</div>
-            <div class="metric-big">{{ stats.total_users }}</div>
-            <div style="color:#94a3b8; font-size:15px;">Всего • {{ stats.approved_users }} одобренных</div>
-        </div>
+	<div class="panel d-flex flex-column justify-content-center text-center">
+    		<div class="panel-header">Пользователи</div>
+    		<div class="metric-big">{{ stats.total_users }}</div>
+    		<div style="color:#94a3b8; font-size:15px;">
+        		Всего • {{ stats.approved_users }} одобренных
+    		</div>
+    		<div style="color:#22d3ee; font-size:18px; margin-top: 10px;">
+        		Активных сейчас: <strong>{{ active_sessions }}</strong>
+    		</div>
+	</div>
+
 
         <!-- Запущенные машины -->
         <div class="panel d-flex flex-column justify-content-center text-center">
