@@ -118,8 +118,6 @@ def start_vm(request, task_id):
 
         # Финальное сообщение
         success_msg = f"Виртуальная машина успешно запущена! IP: {ip_address}"
-        if inserted_count > 0:
-            success_msg += f" | Вставлено флагов: {inserted_count}"
 
         messages.success(request, success_msg)
 
