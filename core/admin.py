@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.utils.html import format_html
 from django.urls import path
 from django.shortcuts import redirect
 from django.contrib import messages
@@ -9,23 +8,12 @@ from datetime import timedelta
 from .models import User, VPNClient, UserNetwork, RegistrationSettings
 
 
-@admin.register(RegistrationSettings)
 class RegistrationSettingsAdmin(admin.ModelAdmin):
-    list_display = ['get_status']
+    """Админка для управления регистрацией через кнопки на главной странице админки"""
 
-    def get_status(self, obj):
-        return str(obj)
-    get_status.short_description = "Статус регистрации"
-
-    def has_add_permission(self, request):
-        # Запрещаем создание новых записей (singleton)
+    def has_module_permission(self, request):
+        # Скрываем из списка моделей в админке
         return False
-
-    def has_delete_permission(self, request, obj=None):
-        # Запрещаем удаление
-        return False
-
-    change_form_template = 'admin/registration_settings_change_form.html'
 
     def get_urls(self):
         urls = super().get_urls()
@@ -47,7 +35,7 @@ class RegistrationSettingsAdmin(admin.ModelAdmin):
             messages.success(request, f"Регистрация открыта на {minutes} минут")
         except ValueError:
             messages.error(request, "Неверное значение минут")
-        return redirect('admin:core_registrationsettings_changelist')
+        return redirect('admin:index')
 
     def open_unlimited(self, request):
         settings = RegistrationSettings.get_settings()
@@ -55,7 +43,7 @@ class RegistrationSettingsAdmin(admin.ModelAdmin):
         settings.closes_at = None
         settings.save()
         messages.success(request, "Регистрация открыта бессрочно")
-        return redirect('admin:core_registrationsettings_changelist')
+        return redirect('admin:index')
 
     def close_registration(self, request):
         settings = RegistrationSettings.get_settings()
@@ -63,7 +51,10 @@ class RegistrationSettingsAdmin(admin.ModelAdmin):
         settings.closes_at = None
         settings.save()
         messages.success(request, "Регистрация закрыта")
-        return redirect('admin:core_registrationsettings_changelist')
+        return redirect('admin:index')
+
+
+admin.site.register(RegistrationSettings, RegistrationSettingsAdmin)
 
 
 @admin.register(User)
