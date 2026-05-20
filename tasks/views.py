@@ -81,7 +81,7 @@ def submit_flag(request, task_id):
                 saved_flag = vm_instance.generated_flags.get(str(flag_obj.id))
             else:
                 # Для файловых заданий используем статичный флаг
-                saved_flag = flag_obj.flag_text
+                saved_flag = flag_obj.flag_value
 
             # Проверяем, сдавал ли уже этот флаг пользователь
             existing_submission = Submission.objects.filter(
