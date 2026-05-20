@@ -91,7 +91,31 @@ def start_vm(request, task_id):
         inserted_count = 0
         generated_flags_dict = {}
 
-        time.sleep(60)  # ждём запуска Guest Agent
+        # Ждём готовности VM (проверяем каждые 5 сек, таймаут 120 сек)
+        vm_ready = False
+        max_wait = 120
+        check_interval = 5
+        elapsed = 0
+
+        print(f"[VM] Ожидаем готовности VM {new_vm_id}...")
+        while elapsed < max_wait:
+            try:
+                # Пробуем выполнить простую команду
+                test_success = proxmox_client.exec_command(new_vm_id, "echo 'ready'")
+                if test_success:
+                    vm_ready = True
+                    print(f"[VM] VM {new_vm_id} готова через {elapsed} секунд")
+                    break
+            except:
+                pass
+
+            time.sleep(check_interval)
+            elapsed += check_interval
+            print(f"[VM] Ожидание... ({elapsed}/{max_wait} сек)")
+
+        if not vm_ready:
+            print(f"[VM] Таймаут ожидания VM {new_vm_id}")
+            raise Exception("VM не готова после 120 секунд ожидания")
 
         for flag_obj in task.flags.all():
             if flag_obj.file_path:
