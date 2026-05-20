@@ -50,11 +50,6 @@ def task_detail(request, task_id):
 @login_required
 def submit_flag(request, task_id):
     task = get_object_or_404(Task, id=task_id)
-    vm_instance = UserVMInstance.objects.filter(
-        user=request.user, 
-        task=task, 
-        status='running'
-    ).first()
 
     if request.method == 'POST':
         submitted_text = request.POST.get('flag', '').strip()
@@ -64,19 +59,33 @@ def submit_flag(request, task_id):
             messages.error(request, "Флаг не может быть пустым.")
             return redirect('task_detail', task_id=task.id)
 
-        if not vm_instance:
-            messages.error(request, "Виртуальная машина не запущена.")
-            return redirect('task_detail', task_id=task.id)
+        # Проверяем VM только для VM-заданий
+        if task.task_type == 'vm':
+            vm_instance = UserVMInstance.objects.filter(
+                user=request.user,
+                task=task,
+                status='running'
+            ).first()
+
+            if not vm_instance:
+                messages.error(request, "Виртуальная машина не запущена.")
+                return redirect('task_detail', task_id=task.id)
+        else:
+            vm_instance = None
 
         try:
             flag_obj = Flag.objects.get(id=flag_id, task=task)
-            
-            # Получаем сгенерированный флаг для этой VM
-            saved_flag = vm_instance.generated_flags.get(str(flag_obj.id))
+
+            # Для VM-заданий проверяем сгенерированный флаг
+            if task.task_type == 'vm' and vm_instance:
+                saved_flag = vm_instance.generated_flags.get(str(flag_obj.id))
+            else:
+                # Для файловых заданий используем статичный флаг
+                saved_flag = flag_obj.flag_text
 
             # Проверяем, сдавал ли уже этот флаг пользователь
             existing_submission = Submission.objects.filter(
-                user=request.user, 
+                user=request.user,
                 flag=flag_obj
             ).first()
 
@@ -110,7 +119,7 @@ def submit_flag(request, task_id):
                         is_correct=False
                     )
                 messages.error(request, "❌ Неверный флаг.")
-                
+
         except Flag.DoesNotExist:
             messages.error(request, "Флаг не найден.")
         except Exception as e:
