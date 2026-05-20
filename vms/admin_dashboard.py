@@ -86,9 +86,36 @@ def proxmox_dashboard(request):
 
     # ==================== Активные сессии (онлайн) ====================
     try:
-        active_sessions = Session.objects.filter(expire_date__gt=timezone.now()).count()
+        active_sessions_count = Session.objects.filter(expire_date__gt=timezone.now()).count()
+
+        # Получаем список активных пользователей
+        active_session_objs = Session.objects.filter(expire_date__gt=timezone.now())
+        active_user_ids = []
+        for session in active_session_objs:
+            data = session.get_decoded()
+            user_id = data.get('_auth_user_id')
+            if user_id:
+                active_user_ids.append(int(user_id))
+
+        active_users = User.objects.filter(id__in=active_user_ids).values_list('username', flat=True)
     except:
-        active_sessions = 0
+        active_sessions_count = 0
+        active_users = []
+
+    # ==================== Список запущенных VM ====================
+    try:
+        running_vms = UserVMInstance.objects.filter(status='running').select_related('user', 'task')
+        vm_list = [
+            {
+                'user': vm.user.username,
+                'task': vm.task.title,
+                'ip': vm.ip_address,
+                'vm_id': vm.proxmox_vm_id
+            }
+            for vm in running_vms
+        ]
+    except:
+        vm_list = []
 
     context = {
         'cpu_proxmox': cpu_proxmox,
@@ -96,7 +123,9 @@ def proxmox_dashboard(request):
         'ram_proxmox': ram_proxmox,
         'ram_django': ram_django,
         'stats': stats,
-        'active_sessions': active_sessions,
+        'active_sessions': active_sessions_count,
+        'active_users': list(active_users),
+        'vm_list': vm_list,
         'last_updated': now,
         'timestamps': json.dumps(list(timestamps)),
         'cpu_data': json.dumps(list(cpu_history)),
