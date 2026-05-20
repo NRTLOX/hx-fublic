@@ -23,6 +23,16 @@
         </a>
     </div>
 
-    <p class="text-muted mt-3">Подключитесь через OpenVPN, чтобы получить доступ к виртуальным машинам</p>
+    <div class="mt-4" style="max-width: 600px; margin: 0 auto;">
+        <h4 style="color: #e0e0e0; font-size: 1.3rem; margin-bottom: 1rem;">Как подключиться к виртуальным машинам:</h4>
+        <ol style="text-align: left; color: #b0b0b0; font-size: 1rem; line-height: 1.8;">
+            <li>Нажмите кнопку "Скачать VPN конфиг" выше</li>
+            <li>Установите OpenVPN</li>
+            <li>Подключитесь командой: <code style="background: #2d2d2d; padding: 2px 8px; border-radius: 4px;">sudo openvpn /путь/к/конфигу</code></li>
+        </ol>
+        <p style="color: #ff6b6b; font-weight: 600; margin-top: 1.5rem;">
+            <i class="bi bi-exclamation-triangle"></i> Важно! Подключение работает только с компьютеров университета
+        </p>
+    </div>
 </div>
 {% endblock %}
