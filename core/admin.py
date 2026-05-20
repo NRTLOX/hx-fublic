@@ -59,16 +59,26 @@ admin.site.register(RegistrationSettings, RegistrationSettingsAdmin)
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ['username', 'is_approved', 'is_staff', 'is_superuser', 'date_joined']
+    list_display = ['username', 'full_name', 'group', 'is_approved', 'is_staff', 'is_superuser', 'date_joined']
     list_filter = ['is_approved', 'is_staff', 'is_superuser']
-    search_fields = ['username']
+    search_fields = ['username', 'full_name', 'group']
 
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
+        ('Личная информация', {'fields': ('full_name', 'group')}),
         ('Статус', {'fields': ('is_approved', 'is_active', 'is_staff', 'is_superuser')}),
         ('Права доступа', {'fields': ('groups', 'user_permissions')}),
         ('Важные даты', {'fields': ('last_login', 'date_joined')}),
     )
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        # Меняем labels для полей
+        if 'is_staff' in form.base_fields:
+            form.base_fields['is_staff'].label = 'Администратор'
+        if 'is_superuser' in form.base_fields:
+            form.base_fields['is_superuser'].label = 'Суперпользователь'
+        return form
 
 
 @admin.register(UserNetwork)
