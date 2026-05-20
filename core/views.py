@@ -23,13 +23,32 @@ def home(request):
     return render(request, 'core/landing.html')
 
 def register_view(request):
+    from .models import RegistrationSettings
+    from django.utils import timezone
+
+    # Проверяем настройки регистрации
+    settings = RegistrationSettings.get_settings()
+
+    # Если регистрация закрыта
+    if not settings.is_open:
+        messages.error(request, 'Регистрация временно закрыта.')
+        return redirect('login')
+
+    # Если регистрация открыта на время и время истекло
+    if settings.closes_at and timezone.now() > settings.closes_at:
+        settings.is_open = False
+        settings.closes_at = None
+        settings.save()
+        messages.error(request, 'Регистрация закрыта.')
+        return redirect('login')
+
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             user.is_approved = False
             user.save()
-            
+
             # Автоматически создаём запись о подсети (пока без конкретной подсети)
             # Подсеть будет назначена при первой генерации VPN конфига
             messages.success(request, 'Регистрация прошла успешно! Ожидайте одобрения администратора.')

@@ -1,0 +1,50 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <h2>Управление регистрацией</h2>
+
+    <div style="margin: 20px 0; padding: 15px; background: #f0f0f0; border-radius: 5px;">
+        <strong>Текущий статус:</strong> {{ original }}
+    </div>
+
+    {% if not original.is_open %}
+        <!-- Регистрация закрыта -->
+        <form method="post" action="{% url 'admin:registration_open_timed' %}" style="display: inline-block; margin-right: 10px;">
+            {% csrf_token %}
+            <label>Открыть регистрацию на
+                <input type="number" name="minutes" value="30" min="1" style="width: 60px;"> минут
+            </label>
+            <button type="submit" class="button" style="background: #417690; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer;">
+                Открыть на время
+            </button>
+        </form>
+
+        <form method="post" action="{% url 'admin:registration_open_unlimited' %}" style="display: inline-block;">
+            {% csrf_token %}
+            <button type="submit" class="button" style="background: #28a745; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer;">
+                Открыть бессрочно
+            </button>
+        </form>
+    {% else %}
+        <!-- Регистрация открыта -->
+        <form method="post" action="{% url 'admin:registration_open_timed' %}" style="display: inline-block; margin-right: 10px;">
+            {% csrf_token %}
+            <label>Продлить регистрацию на
+                <input type="number" name="minutes" value="30" min="1" style="width: 60px;"> минут
+            </label>
+            <button type="submit" class="button" style="background: #417690; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer;">
+                Продлить
+            </button>
+        </form>
+
+        <form method="post" action="{% url 'admin:registration_close' %}" style="display: inline-block;">
+            {% csrf_token %}
+            <button type="submit" class="button" style="background: #dc3545; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer;">
+                Закрыть регистрацию
+            </button>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}
