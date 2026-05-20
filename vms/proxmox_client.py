@@ -40,7 +40,7 @@ class ProxmoxClient:
 
     def start_vm(self, vm_id):
         print(f"[Proxmox] → Запускаем VM {vm_id}")
-        time.sleep(15)
+        time.sleep(10)
         return self.proxmox.nodes(self.node).qemu(vm_id).status.start.post()
 
     def stop_vm(self, vm_id):
