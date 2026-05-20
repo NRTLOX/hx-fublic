@@ -20,35 +20,17 @@
     {% load registration_tags %}
     {% get_registration_status as reg_status %}
 
-    <span style="display: inline-block; padding: 12px 24px; background: #f0f0f0; border-radius: 10px; margin-right: 10px;">
-        <strong>Регистрация:</strong> {{ reg_status }}
-    </span>
-
     {% if not reg_status.is_open %}
-        <form method="post" action="{% url 'admin:registration_open_timed' %}" style="display: inline-block; margin-right: 10px;">
-            {% csrf_token %}
-            <input type="number" name="minutes" value="30" min="1" style="width: 50px; padding: 4px;">
-            <button type="submit" style="background: #417690; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                Открыть на X минут
-            </button>
-        </form>
         <form method="post" action="{% url 'admin:registration_open_unlimited' %}" style="display: inline-block;">
             {% csrf_token %}
-            <button type="submit" style="background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                Открыть бессрочно
+            <button type="submit" style="background: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 16px;">
+                Открыть регистрацию
             </button>
         </form>
     {% else %}
-        <form method="post" action="{% url 'admin:registration_open_timed' %}" style="display: inline-block; margin-right: 10px;">
-            {% csrf_token %}
-            <input type="number" name="minutes" value="30" min="1" style="width: 50px; padding: 4px;">
-            <button type="submit" style="background: #417690; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                Продлить на X минут
-            </button>
-        </form>
         <form method="post" action="{% url 'admin:registration_close' %}" style="display: inline-block;">
             {% csrf_token %}
-            <button type="submit" style="background: #dc3545; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+            <button type="submit" style="background: #dc3545; color: white; padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 16px;">
                 Закрыть регистрацию
             </button>
         </form>
