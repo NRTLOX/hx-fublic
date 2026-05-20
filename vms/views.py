@@ -91,7 +91,7 @@ def start_vm(request, task_id):
         inserted_count = 0
         generated_flags_dict = {}
 
-        time.sleep(20)  # ждём запуска Guest Agent
+        time.sleep(60)  # ждём запуска Guest Agent
 
         for flag_obj in task.flags.all():
             if flag_obj.file_path:
