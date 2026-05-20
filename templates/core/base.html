@@ -79,10 +79,11 @@
 
     <!-- Сообщения (алерты) -->
     <div class="container mt-4">
+        {% block messages %}
         {% if messages %}
             {% for message in messages %}
                 {% if message.tags == 'success' or message.tags == 'error' or message.tags == 'danger' %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm py-3" 
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm py-3"
                          role="alert"
                          style="border-left: 5px solid #a855f7; border-radius: 10px;">
                         {{ message }}
@@ -91,6 +92,7 @@
                 {% endif %}
             {% endfor %}
         {% endif %}
+        {% endblock messages %}
 
         {% block content %}
         {% endblock %}
