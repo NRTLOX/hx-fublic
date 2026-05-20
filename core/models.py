@@ -7,6 +7,16 @@ class User(AbstractUser):
         default=False,
         verbose_name="Одобрен администратором"
     )
+    full_name = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="ФИО"
+    )
+    group = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Группа"
+    )
 
     class Meta:
         verbose_name = "Пользователь"
