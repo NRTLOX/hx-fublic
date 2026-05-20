@@ -175,7 +175,7 @@ def stop_vm(request, task_id):
         vm_instance.status = 'destroyed'
         vm_instance.save()
 
-        messages.success(request, "Виртуальная машина успешно остановлена и удалена.")
+        messages.success(request, "Виртуальная машина успешно остановлена.")
 
     except Exception as e:
         print(f"[ERROR] stop_vm: {str(e)}")
