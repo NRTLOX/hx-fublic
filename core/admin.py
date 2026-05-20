@@ -75,11 +75,13 @@ class UserAdmin(BaseUserAdmin):
         return obj.is_staff
     get_is_staff.short_description = 'Администратор'
     get_is_staff.boolean = True
+    get_is_staff.admin_order_field = 'is_staff'
 
     def get_is_superuser(self, obj):
         return obj.is_superuser
     get_is_superuser.short_description = 'Суперпользователь'
     get_is_superuser.boolean = True
+    get_is_superuser.admin_order_field = 'is_superuser'
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
