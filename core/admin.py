@@ -59,7 +59,7 @@ admin.site.register(RegistrationSettings, RegistrationSettingsAdmin)
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ['username', 'full_name', 'group', 'is_approved', 'is_staff', 'is_superuser', 'date_joined']
+    list_display = ['username', 'full_name', 'group', 'is_approved', 'get_is_staff', 'get_is_superuser', 'date_joined']
     list_filter = ['is_approved', 'is_staff', 'is_superuser']
     search_fields = ['username', 'full_name', 'group']
 
@@ -71,9 +71,19 @@ class UserAdmin(BaseUserAdmin):
         ('Важные даты', {'fields': ('last_login', 'date_joined')}),
     )
 
+    def get_is_staff(self, obj):
+        return obj.is_staff
+    get_is_staff.short_description = 'Администратор'
+    get_is_staff.boolean = True
+
+    def get_is_superuser(self, obj):
+        return obj.is_superuser
+    get_is_superuser.short_description = 'Суперпользователь'
+    get_is_superuser.boolean = True
+
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
-        # Меняем labels для полей
+        # Меняем labels для полей в форме
         if 'is_staff' in form.base_fields:
             form.base_fields['is_staff'].label = 'Администратор'
         if 'is_superuser' in form.base_fields:
