@@ -1,7 +1,7 @@
 {% if vm_instance and vm_instance.status == 'running' %}
 <div class="alert alert-success shadow-sm" style="background-color: #1e3a2f; border-left: 5px solid #4ade80;">
     <h5 class="mb-3">Виртуальная машина запущена</h5>
-    
+
     <div class="row">
         <div class="col-md-6">
             <strong>IP-адрес:</strong><br>
@@ -15,12 +15,13 @@
 </div>
 
 <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
-    <button onclick="resetTimer()" 
+    <button onclick="resetTimer()"
             class="btn btn-outline-warning btn-lg px-4 shadow-sm">
         <i class="bi bi-clock-history"></i> Продлить таймер (+1 час)
     </button>
-    
-    <button onclick="stopVM()" 
+
+    <button onclick="stopVM()"
+            id="stopBtn"
             class="btn btn-outline-danger btn-lg px-4 shadow-sm">
         <i class="bi bi-trash3"></i> Остановить машину
     </button>
@@ -29,7 +30,7 @@
 <script>
     function startCountdown(expiryTime) {
         const countdownEl = document.getElementById('countdown');
-        
+
         function updateTimer() {
             const now = new Date().getTime();
             const distance = expiryTime - now;
@@ -58,19 +59,36 @@
 <div class="alert alert-secondary shadow-sm" style="background-color: #3f3f46; border: none;">
     <p class="mb-0">Машина ещё не запущена. После запуска у вас будет 1 час работы.</p>
 </div>
-<button onclick="startVM()" class="btn btn-primary btn-lg px-5">
+<button onclick="startVM()" id="startBtn" class="btn btn-primary btn-lg px-5">
     Запустить ВМ на 1 час
 </button>
 {% endif %}
 
+<!-- Loading overlay -->
+<div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center;">
+    <div class="text-center">
+        <div class="spinner-border text-light" role="status" style="width: 4rem; height: 4rem;">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+        <p class="text-white mt-3 fs-4" id="loadingText">Ожидайте...</p>
+    </div>
+</div>
+
 <script>
+function showLoading(text) {
+    document.getElementById('loadingText').textContent = text;
+    document.getElementById('loadingOverlay').style.display = 'flex';
+}
+
 function startVM() {
     if (confirm("Запустить виртуальную машину?")) {
+        showLoading("Запускаем виртуальную машину...");
         window.location.href = "{% url 'vm_start' task.id %}";
     }
 }
 function stopVM() {
     if (confirm("Остановить машину?")) {
+        showLoading("Останавливаем виртуальную машину...");
         window.location.href = "{% url 'vm_stop' task.id %}";
     }
 }
