@@ -12,9 +12,19 @@ def task_list(request):
     if not request.user.is_approved:
         return redirect('home')
 
+    tasks = Task.objects.filter(is_active=True)
+
+    # Доступ по группам: показываем задание, если у него нет ограничения по группам,
+    # либо пользователь состоит хотя бы в одной из разрешённых групп. Staff/superuser видят всё.
+    if not (request.user.is_staff or request.user.is_superuser):
+        user_group_ids = list(request.user.groups.values_list('id', flat=True))
+        tasks = tasks.filter(
+            Q(allowed_groups__isnull=True) | Q(allowed_groups__id__in=user_group_ids)
+        ).distinct()
+
     # Для каждого задания считаем общее число флагов и число сданных этим пользователем,
     # чтобы отличать "выполнено полностью" от "выполнено частично"
-    tasks = Task.objects.filter(is_active=True).prefetch_related('flags').annotate(
+    tasks = tasks.prefetch_related('flags').annotate(
         total_flags=Count('flags', distinct=True),
         solved_flags=Count(
             'flags',
@@ -34,6 +44,10 @@ def task_detail(request, task_id):
         return redirect('home')
 
     task = get_object_or_404(Task, id=task_id)
+
+    if not task.is_visible_to(request.user):
+        messages.error(request, "У вас нет доступа к этому заданию.")
+        return redirect('task_list')
 
     # Если это VM-задание — передаём информацию о машине пользователя
     vm_instance = None
@@ -65,6 +79,10 @@ def task_detail(request, task_id):
 @login_required
 def submit_flag(request, task_id):
     task = get_object_or_404(Task, id=task_id)
+
+    if not task.is_visible_to(request.user):
+        messages.error(request, "У вас нет доступа к этому заданию.")
+        return redirect('task_list')
 
     if request.method == 'POST':
         submitted_text = request.POST.get('flag', '').strip()

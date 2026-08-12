@@ -55,6 +55,10 @@ def generate_vm_id(user, task):
 def start_vm(request, task_id):
     task = get_object_or_404(Task, id=task_id, task_type='vm', is_active=True)
 
+    if not task.is_visible_to(request.user):
+        messages.error(request, "У вас нет доступа к этому заданию.")
+        return redirect('task_list')
+
     # Если все флаги задания уже сданы — запускать VM больше незачем
     total_flags = task.flags.count()
     solved_flags = Submission.objects.filter(

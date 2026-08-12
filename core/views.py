@@ -102,7 +102,7 @@ def profile(request):
 
     # Все успешно сданные флаги пользователя
     correct_submissions = Submission.objects.filter(
-        user=request.user, 
+        user=request.user,
         is_correct=True
     ).select_related('task', 'flag')
 
@@ -114,11 +114,15 @@ def profile(request):
     # Количество решённых заданий
     solved_tasks_count = correct_submissions.values('task').distinct().count()
 
+    # Общее число сданных флагов (считаем ДО среза, иначе при >20 флагах цифра будет врать)
+    submitted_flags_count = correct_submissions.count()
+
     context = {
         'user': request.user,
         'total_points': total_points,
         'solved_tasks_count': solved_tasks_count,
-        'submissions': correct_submissions.order_by('-submitted_at')[:20],  # последние 20
+        'submitted_flags_count': submitted_flags_count,
+        'submissions': correct_submissions.order_by('-submitted_at')[:20],  # последние 20 — только для таблицы
     }
     return render(request, 'core/profile.html', context)
 

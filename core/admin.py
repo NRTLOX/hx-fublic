@@ -59,17 +59,26 @@ admin.site.register(RegistrationSettings, RegistrationSettingsAdmin)
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ['username', 'full_name', 'group', 'is_approved', 'get_is_staff', 'get_is_superuser', 'date_joined']
-    list_filter = ['is_approved', 'is_staff', 'is_superuser']
+    list_display = ['username', 'full_name', 'group', 'get_groups', 'is_approved', 'get_is_staff', 'get_is_superuser', 'date_joined']
+    list_filter = ['is_approved', 'is_staff', 'is_superuser', 'groups']
     search_fields = ['username', 'full_name', 'group']
 
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         ('Личная информация', {'fields': ('full_name', 'group')}),
         ('Статус', {'fields': ('is_approved', 'is_active', 'is_staff', 'is_superuser')}),
-        ('Права доступа', {'fields': ('groups', 'user_permissions')}),
+        ('Группы и доступ к заданиям', {
+            'fields': ('groups', 'user_permissions'),
+            'description': 'Группы отсюда используются, в том числе, для ограничения доступа к заданиям '
+                            '(настраивается в самом задании, поле «Доступно только группам»). '
+                            'Создать новую группу можно на странице Группы.'
+        }),
         ('Важные даты', {'fields': ('last_login', 'date_joined')}),
     )
+
+    def get_groups(self, obj):
+        return ', '.join(g.name for g in obj.groups.all()) or '—'
+    get_groups.short_description = 'Группы доступа'
 
     def get_is_staff(self, obj):
         return obj.is_staff
