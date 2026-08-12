@@ -27,7 +27,7 @@
                                 {% if player.id == user.id %}<span class="text-primary">(вы)</span>{% endif %}
                             </td>
                             <td class="text-center">
-                                <span class="badge bg-success fs-6">{{ player.points|default:0 }}</span>
+                                <span class="badge bg-primary fs-6">{{ player.points|default:0 }}</span>
                             </td>
                             <td class="text-center">{{ player.solved|default:0 }}</td>
                         </tr>
