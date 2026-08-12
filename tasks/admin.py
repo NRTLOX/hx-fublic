@@ -11,10 +11,11 @@ class FlagInline(admin.TabularInline):
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ['title', 'task_type', 'points', 'is_active', 'created_at']
-    list_filter = ['task_type', 'is_active']
+    list_display = ['title', 'task_type', 'points', 'is_active', 'get_allowed_groups', 'created_at']
+    list_filter = ['task_type', 'is_active', 'allowed_groups']
     search_fields = ['title', 'description']
     inlines = [FlagInline]
+    filter_horizontal = ['allowed_groups']
 
     fieldsets = (
         (None, {
@@ -27,9 +28,18 @@ class TaskAdmin(admin.ModelAdmin):
         ('Файлы и Proxmox', {
             'fields': ('file', 'proxmox_template_id')
         }),
+        ('Доступ', {
+            'fields': ('allowed_groups',),
+            'description': 'Если не выбрать ни одной группы — задание видно всем одобренным участникам.'
+        }),
     )
 
     # Убираем старый formfield_overrides для readme (больше не нужен)
+
+    def get_allowed_groups(self, obj):
+        groups = list(obj.allowed_groups.all())
+        return ', '.join(g.name for g in groups) if groups else 'Все'
+    get_allowed_groups.short_description = 'Доступ'
 
 
 @admin.register(Submission)

@@ -43,6 +43,16 @@ class Task(models.Model):
     points = models.PositiveIntegerField(default=100, verbose_name="Баллы")
     is_active = models.BooleanField(default=True, verbose_name="Активно")
 
+    # Доступ по группам (используем стандартные Django-группы, admin/auth/group/).
+    # Если группы не выбраны — задание видно всем одобренным участникам (как раньше).
+    allowed_groups = models.ManyToManyField(
+        'auth.Group',
+        blank=True,
+        related_name='tasks',
+        verbose_name="Доступно только группам",
+        help_text="Если не выбрана ни одна группа — задание видно всем одобренным участникам"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -53,6 +63,14 @@ class Task(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.get_task_type_display()})"
+
+    def is_visible_to(self, user):
+        """Есть ли у пользователя доступ к заданию с учётом ограничения по группам."""
+        if user.is_staff or user.is_superuser:
+            return True
+        if not self.allowed_groups.exists():
+            return True
+        return self.allowed_groups.filter(user=user).exists()
 
     def get_readme_html(self):
         """Преобразует Markdown в безопасный HTML (оставлено для обратной совместимости)"""
