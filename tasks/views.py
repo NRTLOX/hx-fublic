@@ -32,20 +32,32 @@ def task_list(request):
 def task_detail(request, task_id):
     if not request.user.is_approved:
         return redirect('home')
-    
+
     task = get_object_or_404(Task, id=task_id)
 
     # Если это VM-задание — передаём информацию о машине пользователя
     vm_instance = None
     if task.task_type == 'vm':
         vm_instance = UserVMInstance.objects.filter(
-            user=request.user, 
+            user=request.user,
             task=task
         ).first()
 
+    # Флаги, которые пользователь уже сдал верно — чтобы заглушить их поля ввода
+    solved_flag_ids = set(Submission.objects.filter(
+        user=request.user,
+        task=task,
+        is_correct=True
+    ).values_list('flag_id', flat=True))
+
+    total_flags = task.flags.count()
+    task_fully_solved = total_flags > 0 and len(solved_flag_ids) == total_flags
+
     return render(request, 'tasks/task_detail.html', {
         'task': task,
-        'vm_instance': vm_instance
+        'vm_instance': vm_instance,
+        'solved_flag_ids': solved_flag_ids,
+        'task_fully_solved': task_fully_solved,
     })
 
 

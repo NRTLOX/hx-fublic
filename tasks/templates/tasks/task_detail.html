@@ -65,15 +65,35 @@
                         <h5 class="text-white">Сдать флаг(и):</h5>
                         {% for flag in task.flags.all %}
                         <div class="mt-3 p-3 border border-secondary rounded bg-dark">
+                            {% if flag.label %}
+                            <h6 class="text-muted mb-2">{{ flag.label }}</h6>
+                            {% endif %}
+
                             {% if flag.hint %}
-                            <div class="alert alert-info py-2">
-                                <strong>Подсказка:</strong> {{ flag.hint }}
+                            <div class="mb-2">
+                                <button type="button" class="btn btn-outline-purple btn-sm" data-bs-toggle="collapse" data-bs-target="#hint-{{ flag.id }}">
+                                    <i class="bi bi-lightbulb"></i> Показать подсказку
+                                </button>
+                                <div class="collapse mt-2" id="hint-{{ flag.id }}">
+                                    <div class="alert alert-info py-2 mb-0">
+                                        <strong>Подсказка:</strong> {{ flag.hint }}
+                                    </div>
+                                </div>
                             </div>
                             {% endif %}
-                           
+
                             <form method="POST" action="{% url 'submit_flag' task.id %}">
                                 {% csrf_token %}
                                 <div class="input-group">
+                                    {% if flag.id in solved_flag_ids %}
+                                    <input type="text"
+                                           class="form-control form-control-lg bg-dark text-white border-secondary"
+                                           value="Флаг принят"
+                                           disabled>
+                                    <button type="submit" class="btn btn-success btn-lg" disabled>
+                                        <i class="bi bi-check-lg"></i> Принято
+                                    </button>
+                                    {% else %}
                                     <input type="text"
                                            name="flag"
                                            class="form-control form-control-lg bg-dark text-white border-secondary"
@@ -83,6 +103,7 @@
                                     <button type="submit" class="btn btn-success btn-lg">
                                         Отправить
                                     </button>
+                                    {% endif %}
                                 </div>
                             </form>
                         </div>

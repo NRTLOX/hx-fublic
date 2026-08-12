@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
 import time
-from tasks.models import Task
+from tasks.models import Task, Submission
 from .models import UserVMInstance
 from .proxmox_client import proxmox_client
 import random
@@ -54,6 +54,15 @@ def generate_vm_id(user, task):
 @login_required
 def start_vm(request, task_id):
     task = get_object_or_404(Task, id=task_id, task_type='vm', is_active=True)
+
+    # Если все флаги задания уже сданы — запускать VM больше незачем
+    total_flags = task.flags.count()
+    solved_flags = Submission.objects.filter(
+        user=request.user, task=task, is_correct=True
+    ).values_list('flag_id', flat=True).distinct().count()
+    if total_flags > 0 and solved_flags == total_flags:
+        messages.warning(request, "Задание уже полностью решено, запускать машину больше не нужно.")
+        return redirect('task_detail', task_id=task.id)
 
     # Удаляем старую запись VM для этого пользователя и задания
     UserVMInstance.objects.filter(user=request.user, task=task).delete()

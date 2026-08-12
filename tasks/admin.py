@@ -6,7 +6,7 @@ from .models import Task, Flag, Submission
 class FlagInline(admin.TabularInline):
     model = Flag
     extra = 1
-    fields = ['flag_value', 'hint', 'description', 'file_path']
+    fields = ['label', 'flag_value', 'hint', 'description', 'file_path']
 
 
 @admin.register(Task)
