@@ -14,12 +14,27 @@ def home(request):
     if request.user.is_authenticated:
         if not request.user.is_approved:
             return render(request, 'core/not_approved.html')
-        
+
         # Проверяем, есть ли уже VPN конфиг у пользователя
         has_vpn = hasattr(request.user, 'vpn_client') and request.user.vpn_client.is_active
-        
-        return render(request, 'core/home.html', {'has_vpn': has_vpn})
-    
+
+        # Те же 3 цифры, что и в профиле
+        from django.db.models import Sum
+        from tasks.models import Submission
+
+        correct_submissions = Submission.objects.filter(user=request.user, is_correct=True)
+        total_points = correct_submissions.aggregate(total=Sum('task__points'))['total'] or 0
+        solved_tasks_count = correct_submissions.values('task').distinct().count()
+        submitted_flags_count = correct_submissions.count()
+
+        context = {
+            'has_vpn': has_vpn,
+            'total_points': total_points,
+            'solved_tasks_count': solved_tasks_count,
+            'submitted_flags_count': submitted_flags_count,
+        }
+        return render(request, 'core/home.html', context)
+
     return render(request, 'core/landing.html')
 
 def register_view(request):
