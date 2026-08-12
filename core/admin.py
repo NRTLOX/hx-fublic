@@ -1,11 +1,13 @@
 from django.contrib import admin
+from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.urls import path
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
-from .models import User, VPNClient, UserNetwork, RegistrationSettings
+from .models import User, VPNClient, UserNetwork, RegistrationSettings, GroupRegistrationSettings
 
 
 class RegistrationSettingsAdmin(admin.ModelAdmin):
@@ -100,6 +102,28 @@ class UserAdmin(BaseUserAdmin):
         if 'is_superuser' in form.base_fields:
             form.base_fields['is_superuser'].label = 'Суперпользователь'
         return form
+
+
+class GroupRegistrationSettingsInline(admin.StackedInline):
+    model = GroupRegistrationSettings
+    can_delete = False
+    verbose_name = "Настройка регистрации"
+    verbose_name_plural = "Настройка регистрации"
+
+
+admin.site.unregister(Group)
+
+
+@admin.register(Group)
+class GroupAdmin(BaseGroupAdmin):
+    inlines = [GroupRegistrationSettingsInline]
+    list_display = ['name', 'get_registration_open']
+
+    def get_registration_open(self, obj):
+        settings_obj = getattr(obj, 'registration_settings', None)
+        return settings_obj.is_open_for_registration if settings_obj else True
+    get_registration_open.short_description = 'Доступна при регистрации'
+    get_registration_open.boolean = True
 
 
 @admin.register(UserNetwork)
