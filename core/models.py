@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group
 from django.conf import settings
 from django.db import models
 
@@ -67,6 +67,28 @@ class VPNClient(models.Model):
 
     def __str__(self):
         return f"VPN for {self.user.username}"
+
+class GroupRegistrationSettings(models.Model):
+    """Настройка группы: показывать ли её в списке при регистрации.
+    Отсутствие записи для группы = группа доступна (открыта по умолчанию)."""
+    group = models.OneToOneField(
+        Group,
+        on_delete=models.CASCADE,
+        related_name='registration_settings'
+    )
+    is_open_for_registration = models.BooleanField(
+        default=True,
+        verbose_name="Доступна при регистрации"
+    )
+
+    class Meta:
+        verbose_name = "Настройка группы (регистрация)"
+        verbose_name_plural = "Настройки групп (регистрация)"
+
+    def __str__(self):
+        status = "открыта" if self.is_open_for_registration else "закрыта"
+        return f"{self.group.name} — {status} для регистрации"
+
 
 class UserNetwork(models.Model):
     user = models.OneToOneField(
