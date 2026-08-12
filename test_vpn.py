@@ -26,7 +26,7 @@ def test_generate_for_user(username):
         ], capture_output=True, text=True)
 
         if result.returncode == 0:
-            print("✅ Конфиг успешно получен! Первые 30 строк:")
+            print("Конфиг успешно получен! Первые 30 строк:")
             print(result.stdout[:1000])
             
             # Сохраняем в файл

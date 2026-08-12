@@ -95,18 +95,18 @@ class ProxmoxClient:
             ], capture_output=True, text=True, timeout=40)
 
             if result.returncode == 0:
-                print(f"[Proxmox] ✓ Команда успешно выполнена в VM {vm_id}")
+                print(f"[Proxmox] OK: команда успешно выполнена в VM {vm_id}")
                 return True
             else:
-                print(f"[Proxmox] ✗ Ошибка выполнения (код {result.returncode}):")
+                print(f"[Proxmox] Ошибка выполнения (код {result.returncode}):")
                 print(result.stderr.strip()[:500])  # обрезаем длинный вывод
                 return False
 
         except subprocess.TimeoutExpired:
-            print(f"[Proxmox] ✗ Таймаут SSH для VM {vm_id}")
+            print(f"[Proxmox] Таймаут SSH для VM {vm_id}")
             return False
         except Exception as e:
-            print(f"[Proxmox] ✗ Ошибка SSH: {e}")
+            print(f"[Proxmox] Ошибка SSH: {e}")
             return False
 
 
