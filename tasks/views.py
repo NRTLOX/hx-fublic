@@ -107,7 +107,7 @@ def submit_flag(request, task_id):
                             submitted_flag=submitted_text,
                             is_correct=True
                         )
-                    messages.success(request, f"✅ Флаг принят! +{task.points} баллов")
+                    messages.success(request, f"Флаг принят! +{task.points} баллов")
             else:
                 # Неправильный флаг
                 if not existing_submission:
@@ -118,7 +118,7 @@ def submit_flag(request, task_id):
                         submitted_flag=submitted_text,
                         is_correct=False
                     )
-                messages.error(request, "❌ Неверный флаг.")
+                messages.error(request, "Неверный флаг.")
 
         except Flag.DoesNotExist:
             messages.error(request, "Флаг не найден.")

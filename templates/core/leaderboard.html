@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container">
-    <h1 class="mb-4 text-center">🏆 Таблица лидеров</h1>
+    <h1 class="mb-4 text-center"><i class="bi bi-trophy-fill"></i> Таблица лидеров</h1>
 
     <div class="card shadow">
         <div class="card-body">
@@ -20,7 +20,7 @@
                         {% for player in leaderboard %}
                         <tr class="{% if player.id == user.id %}table-primary fw-bold{% endif %}">
                             <td class="text-center fw-bold">
-                                {% if player.id == user.id %}👑{% else %}{{ forloop.counter }}{% endif %}
+                                {% if player.id == user.id %}<i class="bi bi-star-fill" style="color: var(--accent-purple);"></i>{% else %}{{ forloop.counter }}{% endif %}
                             </td>
                             <td>
                                 {{ player.username }}

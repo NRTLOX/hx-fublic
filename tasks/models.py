@@ -107,4 +107,4 @@ class Submission(models.Model):
         unique_together = ('user', 'flag')
 
     def __str__(self):
-        return f"{self.user.username} -> {self.task.title} ({'✅' if self.is_correct else '❌'})"
+        return f"{self.user.username} -> {self.task.title} ({'верно' if self.is_correct else 'неверно'})"

@@ -17,4 +17,4 @@ from django.utils.html import format_html
 
 def get_monitoring_link():
     url = reverse('admin_monitoring')
-    return format_html('<a href="{}" class="btn btn-primary" style="margin-bottom:10px;">📊 Мониторинг системы</a>', url)
+    return format_html('<a href="{}" class="btn btn-primary" style="margin-bottom:10px;">Мониторинг системы</a>', url)

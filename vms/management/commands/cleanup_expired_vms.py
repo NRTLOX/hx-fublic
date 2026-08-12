@@ -38,12 +38,12 @@ class Command(BaseCommand):
 
                 count += 1
                 self.stdout.write(
-                    self.style.SUCCESS(f"✓ Уничтожена VM {vm.proxmox_vm_id}")
+                    self.style.SUCCESS(f"Уничтожена VM {vm.proxmox_vm_id}")
                 )
 
             except Exception as e:
                 self.stdout.write(
-                    self.style.ERROR(f"✗ Ошибка при очистке VM {vm.proxmox_vm_id}: {e}")
+                    self.style.ERROR(f"Ошибка при очистке VM {vm.proxmox_vm_id}: {e}")
                 )
 
         if count > 0:
