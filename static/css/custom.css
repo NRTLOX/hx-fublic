@@ -137,6 +137,54 @@ body {
     background-color: transparent;
 }
 
+.btn-purple {
+    color: white;
+    background-color: var(--accent-purple);
+    border-color: var(--accent-purple);
+}
+
+.btn-purple:hover,
+.btn-purple:focus {
+    color: white;
+    background-color: var(--accent-purple-dark);
+    border-color: var(--accent-purple-dark);
+}
+
+/* ==================== ПОПАП С СООБЩЕНИЯМИ (по центру экрана) ==================== */
+
+#messageModalContent {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: none;
+    border-radius: 12px;
+    border-top: 5px solid var(--accent-purple);
+}
+
+#messageModalContent .modal-header,
+#messageModalContent .modal-footer {
+    border-color: var(--border-color);
+}
+
+#messageModalContent .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+#messageModalContent.messagemodal-success {
+    border-top-color: #4ade80;
+}
+
+#messageModalContent.messagemodal-success .modal-title {
+    color: #86efac;
+}
+
+#messageModalContent.messagemodal-error {
+    border-top-color: #f87171;
+}
+
+#messageModalContent.messagemodal-error .modal-title {
+    color: #fda4af;
+}
+
 .btn-outline-purple:hover,
 .btn-outline-purple:focus,
 .btn-outline-purple:active {
