@@ -158,5 +158,4 @@ def download_vpn_config(request):
     response = HttpResponse(config, content_type='application/x-openvpn-profile')
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
-    messages.success(request, f"VPN конфиг для {request.user.username} скачивается...")
     return response
