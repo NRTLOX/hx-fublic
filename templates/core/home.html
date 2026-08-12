@@ -3,7 +3,22 @@
 {% block content %}
 <div class="text-center mt-5">
     <h1 class="display-5">Добро пожаловать, {{ user.username }}!</h1>
-    
+
+    <div class="row justify-content-center mt-4" style="max-width: 600px; margin: 0 auto;">
+        <div class="col-4">
+            <h2 class="text-success fw-bold">{{ total_points }}</h2>
+            <p class="text">Набрано баллов</p>
+        </div>
+        <div class="col-4">
+            <h2 class="text-primary fw-bold">{{ solved_tasks_count }}</h2>
+            <p class="text">Решено заданий</p>
+        </div>
+        <div class="col-4">
+            <h2 class="text-info fw-bold">{{ submitted_flags_count }}</h2>
+            <p class="text">Сдано флагов</p>
+        </div>
+    </div>
+
     <div class="mt-4">
         <a href="{% url 'task_list' %}" class="btn btn-lg btn-primary me-3">
             Перейти к заданиям
