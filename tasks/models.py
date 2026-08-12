@@ -67,6 +67,13 @@ class Task(models.Model):
 class Flag(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='flags')
 
+    label = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Название флага (например: root, user)",
+        help_text="Показывается участнику над полем ввода этого флага"
+    )
+
     flag_value = models.CharField(
         max_length=255,
         blank=True,
