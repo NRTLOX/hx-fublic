@@ -56,6 +56,19 @@ body {
     box-shadow: 0 0 0 0.3rem rgba(168, 85, 247, 0.4) !important;
 }
 
+/* Сданный флаг — маска вместо значения, перечёркнутая по диагонали (как отметка о сдаче на THM) */
+.flag-solved-strike {
+    color: #8b8fa3 !important;
+    letter-spacing: 1px;
+    background-image: repeating-linear-gradient(
+        -45deg,
+        transparent 0,
+        transparent 8px,
+        #4ade80 8px,
+        #4ade80 10px
+    ) !important;
+}
+
 /* Таблицы — делаем полностью тёмными */
 .table {
     color: var(--text-color) !important;
