@@ -13,7 +13,7 @@
                 <div class="card-body">
 
                     <!-- Верхняя строка: тип задания + статус выполнения -->
-                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                         {% if task.task_type == 'file' %}
                             <span class="badge bg-primary">Файл на взлом</span>
                         {% elif task.task_type == 'vm' %}
@@ -33,8 +33,8 @@
                         {% endif %}
                     </div>
 
-                    <h5 class="card-title">{{ task.title }}</h5>
-                    <p class="card-text text-muted">{{ task.description|truncatewords:25 }}</p>
+                    <h5 class="card-title text-truncate">{{ task.title }}</h5>
+                    <p class="card-text text-muted card-text-clamp">{{ task.description|truncatewords:25 }}</p>
                 </div>
                
                 <!-- ==================== ФУТЕР С КНОПКОЙ И БАЛЛАМИ ==================== -->

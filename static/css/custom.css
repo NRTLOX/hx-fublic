@@ -21,6 +21,16 @@ body {
     background-color: #111827 !important;
 }
 
+/* Карточки заданий: фиксируем высоту описания, чтобы карточки разной "болтливости"
+   не растягивали свою строку сетки сильнее соседних строк */
+.card-text-clamp {
+    height: 4.5em; /* 3 строки при line-height по умолчанию (1.5) */
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
 /* Карточки */
 .card {
     background-color: var(--card-bg) !important;
