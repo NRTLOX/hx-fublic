@@ -39,7 +39,7 @@
                                 {% for sub in submissions %}
                                 <tr>
                                     <td>{{ sub.task.title }}</td>
-                                    <td><span class="badge bg-success">{{ sub.task.points }}</span></td>
+                                    <td><span class="badge bg-primary">{{ sub.task.points }}</span></td>
                                     <td>{{ sub.submitted_at|date:"d.m.Y H:i" }}</td>
                                 </tr>
                                 {% endfor %}

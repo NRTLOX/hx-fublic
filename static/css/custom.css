@@ -156,6 +156,21 @@ body {
     background-color: transparent;
 }
 
+/* Bootstrap-овский outline-primary (кнопки "Инструкция", "Скачать файл") — тоже в фиолетовый */
+.btn-outline-primary {
+    color: var(--accent-purple) !important;
+    border-color: var(--accent-purple) !important;
+    background-color: transparent !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active {
+    color: white !important;
+    background-color: var(--accent-purple) !important;
+    border-color: var(--accent-purple) !important;
+}
+
 .btn-purple {
     color: white;
     background-color: var(--accent-purple);
