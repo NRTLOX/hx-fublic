@@ -109,12 +109,15 @@ body {
 
 /* Кнопки */
 .btn-primary, .btn-success {
-    background-color: var(--accent-purple);
-    border-color: var(--accent-purple);
+    background-color: var(--accent-purple) !important;
+    border-color: var(--accent-purple) !important;
 }
 
-.btn-primary:hover, .btn-success:hover {
-    background-color: #9333ea;
+.btn-primary:hover, .btn-success:hover,
+.btn-primary:focus, .btn-success:focus,
+.btn-primary:active, .btn-success:active {
+    background-color: #9333ea !important;
+    border-color: #9333ea !important;
 }
 /* ==================== АЛЕРТЫ ==================== */
 
