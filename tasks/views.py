@@ -1,27 +1,30 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Count, Q
 from .models import Task, Submission
 from vms.models import UserVMInstance
 from tasks.models import Task, Flag
 
-    
+
 @login_required
 def task_list(request):
     if not request.user.is_approved:
         return redirect('home')
-    
-    tasks = Task.objects.filter(is_active=True).prefetch_related('flags')
 
-    # Получаем список ID заданий, которые пользователь уже решил (хотя бы один правильный флаг)
-    solved_task_ids = Submission.objects.filter(
-        user=request.user,
-        is_correct=True
-    ).values_list('task_id', flat=True).distinct()
+    # Для каждого задания считаем общее число флагов и число сданных этим пользователем,
+    # чтобы отличать "выполнено полностью" от "выполнено частично"
+    tasks = Task.objects.filter(is_active=True).prefetch_related('flags').annotate(
+        total_flags=Count('flags', distinct=True),
+        solved_flags=Count(
+            'flags',
+            filter=Q(flags__submission__user=request.user, flags__submission__is_correct=True),
+            distinct=True
+        ),
+    )
 
     context = {
         'tasks': tasks,
-        'solved_task_ids': list(solved_task_ids),
     }
     return render(request, 'tasks/task_list.html', context)
 
