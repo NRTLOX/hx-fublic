@@ -113,9 +113,16 @@
 		<div style="max-height: 200px; overflow-y: auto; padding-left: 20px; border-left: 1px solid #334155; min-width: 250px;">
 			<div style="font-size: 13px; color: #94a3b8; margin-bottom: 8px;">Список VM:</div>
 			{% for vm in vm_list %}
-				<div style="color: #a78bfa; font-size: 13px; padding: 4px 0; border-bottom: 1px solid #334155;">
-					<div><strong>{{ vm.user }}</strong> • {{ vm.task }}</div>
-					<div style="color: #64748b; font-size: 12px;">{{ vm.ip }} (ID: {{ vm.vm_id }})</div>
+				<div style="color: #a78bfa; font-size: 13px; padding: 4px 0; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+					<div>
+						<div><strong>{{ vm.user }}</strong> • {{ vm.task }}</div>
+						<div style="color: #64748b; font-size: 12px;">{{ vm.ip }} (ID: {{ vm.vm_id }})</div>
+					</div>
+					<a href="#"
+					   onclick="if(confirm('Остановить VM пользователя {{ vm.user }}?')) { window.location.href='{% url 'admin_stop_vm' vm.instance_id %}'; } return false;"
+					   style="color:#f87171; font-size:12px; text-decoration:none; white-space:nowrap; flex-shrink:0;">
+						Стоп
+					</a>
 				</div>
 			{% empty %}
 				<div style="color: #64748b; font-size: 13px;">Нет запущенных</div>
