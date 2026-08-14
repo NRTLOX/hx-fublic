@@ -22,7 +22,7 @@ class TaskAdmin(admin.ModelAdmin):
             'fields': ('title', 'task_type', 'points', 'is_active')
         }),
         ('Описание', {
-            'fields': ('description', 'readme_file'),   # ← теперь файл, а не textarea
+            'fields': ('description', 'readme_file'),
             'description': 'Краткое описание + файл README (HTML или PDF)'
         }),
         ('Файлы и Proxmox', {
@@ -33,8 +33,6 @@ class TaskAdmin(admin.ModelAdmin):
             'description': 'Если не выбрать ни одной группы — задание видно всем одобренным участникам.'
         }),
     )
-
-    # Убираем старый formfield_overrides для readme (больше не нужен)
 
     def get_allowed_groups(self, obj):
         groups = list(obj.allowed_groups.all())
