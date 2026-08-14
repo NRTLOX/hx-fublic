@@ -23,14 +23,14 @@
     {% if not reg_status.is_open %}
         <form method="post" action="{% url 'admin:registration_open_unlimited' %}" style="display: inline-block;">
             {% csrf_token %}
-            <button type="submit" style="background: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 16px;">
+            <button type="submit" style="background: #22d3ee; color: #0f172a; padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 16px;">
                 Открыть регистрацию
             </button>
         </form>
     {% else %}
         <form method="post" action="{% url 'admin:registration_close' %}" style="display: inline-block;">
             {% csrf_token %}
-            <button type="submit" style="background: #dc3545; color: white; padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 16px;">
+            <button type="submit" style="background: #22d3ee; color: #0f172a; padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 16px;">
                 Закрыть регистрацию
             </button>
         </form>
