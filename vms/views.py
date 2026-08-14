@@ -170,6 +170,17 @@ def start_vm(request, task_id):
     return redirect('task_detail', task_id=task.id)
 
 
+def stop_and_destroy_vm(vm_instance):
+    """Общая логика остановки VM — используется и на странице задания, и из админ-панели мониторинга."""
+    if vm_instance.proxmox_vm_id:
+        proxmox_client.stop_vm(vm_instance.proxmox_vm_id)
+        time.sleep(8)
+        proxmox_client.destroy_vm(vm_instance.proxmox_vm_id)
+
+    vm_instance.status = 'destroyed'
+    vm_instance.save()
+
+
 @login_required
 def stop_vm(request, task_id):
     task = get_object_or_404(Task, id=task_id)
@@ -180,14 +191,7 @@ def stop_vm(request, task_id):
         return redirect('task_detail', task_id=task.id)
 
     try:
-        if vm_instance.proxmox_vm_id:
-            proxmox_client.stop_vm(vm_instance.proxmox_vm_id)
-            time.sleep(8)
-            proxmox_client.destroy_vm(vm_instance.proxmox_vm_id)
-
-        vm_instance.status = 'destroyed'
-        vm_instance.save()
-
+        stop_and_destroy_vm(vm_instance)
         messages.success(request, "Виртуальная машина успешно остановлена.")
 
     except Exception as e:

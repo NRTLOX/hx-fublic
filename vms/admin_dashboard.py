@@ -1,5 +1,6 @@
 from django.contrib.admin.views.decorators import staff_member_required
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.conf import settings
 from proxmoxer import ProxmoxAPI
 import psutil
@@ -11,6 +12,7 @@ from django.contrib.sessions.models import Session
 from django.utils import timezone
 
 from vms.models import UserVMInstance
+from vms.views import stop_and_destroy_vm
 from tasks.models import Task
 from django.contrib.auth import get_user_model
 
@@ -107,6 +109,7 @@ def proxmox_dashboard(request):
         running_vms = UserVMInstance.objects.filter(status='running').select_related('user', 'task')
         vm_list = [
             {
+                'instance_id': vm.id,
                 'user': vm.user.username,
                 'task': vm.task.title,
                 'ip': vm.ip_address,
@@ -132,3 +135,19 @@ def proxmox_dashboard(request):
         'ram_data': json.dumps(list(ram_history)),
     }
     return render(request, 'admin/proxmox_dashboard.html', context)
+
+
+@staff_member_required
+def admin_stop_vm(request, instance_id):
+    """Остановка VM из панели мониторинга — работает для VM любого пользователя,
+    использует ту же логику, что и остановка со страницы задания."""
+    vm_instance = get_object_or_404(UserVMInstance, id=instance_id)
+
+    try:
+        stop_and_destroy_vm(vm_instance)
+        messages.success(request, f"VM пользователя {vm_instance.user.username} остановлена.")
+    except Exception as e:
+        print(f"[ERROR] admin_stop_vm: {str(e)}")
+        messages.error(request, "Не удалось остановить виртуальную машину.")
+
+    return redirect('admin_monitoring')
