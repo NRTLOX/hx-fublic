@@ -8,7 +8,7 @@ env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-change-me-in-production')
-DEBUG = True
+DEBUG = env.bool('DEBUG', default=False)
 ALLOWED_HOSTS = ['*']  # потом заменишь на свой домен
 
 INSTALLED_APPS = [
