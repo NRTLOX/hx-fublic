@@ -23,7 +23,6 @@ class Task(models.Model):
         help_text="Устарело. Используйте поле ниже для загрузки файла."
     )
 
-    # === НОВОЕ ПОЛЕ: файл README ===
     readme_file = models.FileField(
         upload_to='tasks/readme/',
         blank=True,
