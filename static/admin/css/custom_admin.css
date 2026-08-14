@@ -64,6 +64,15 @@ body {
     border-radius: 8px;
 }
 
+/* Django сам притушивает disabled-кнопки прозрачностью (opacity 0.4 в base.css,
+   0.55 у "Выбрать все"/"Удалить все" в widgets.css) — на ярком бирюзовом это выглядит
+   как будто у кнопки вообще другой, более тёмный цвет. Отключаем затемнение —
+   все кнопки в админке остаются одного цвета, как "Мониторинг". */
+.button[disabled], input[type=submit][disabled], input[type=button][disabled],
+.selector-chooseall, .selector-clearall {
+    opacity: 1 !important;
+}
+
 /* ==================== ТАБЛИЦЫ ==================== */
 .results {
     background: var(--bg-card) !important;
