@@ -2,6 +2,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
+from django.db import IntegrityError
 from datetime import timedelta
 import time
 from tasks.models import Task, Submission
@@ -78,6 +79,23 @@ def start_vm(request, task_id):
 
     new_vm_id = generate_vm_id(request.user, task)
 
+    # Резервируем строку (и тем самым IP) СРАЗУ, а не после долгого провижининга в Proxmox —
+    # иначе повторный/параллельный запрос на запуск той же VM успевает выбрать тот же IP
+    # (get_next_free_ip не видит ещё не сохранённую запись) и падает на UNIQUE constraint
+    # уже ПОСЛЕ того, как машина в Proxmox реально поднята.
+    try:
+        vm_instance = UserVMInstance.objects.create(
+            user=request.user,
+            task=task,
+            proxmox_vm_id=new_vm_id,
+            ip_address=ip_address,
+            status='stopped',  # временно, пока Proxmox не подтвердит запуск
+            generated_flags={}
+        )
+    except IntegrityError:
+        messages.warning(request, "Машина уже запускается — подожди немного и обнови страницу.")
+        return redirect('task_detail', task_id=task.id)
+
     try:
         # 1. Клонируем шаблон
         proxmox_client.clone_vm(task.proxmox_template_id, new_vm_id)
@@ -88,17 +106,11 @@ def start_vm(request, task_id):
         # 3. Запускаем машину
         proxmox_client.start_vm(new_vm_id)
 
-        # 4. Сохраняем VM в базу
-        vm_instance = UserVMInstance.objects.create(
-            user=request.user,
-            task=task,
-            proxmox_vm_id=new_vm_id,
-            ip_address=ip_address,
-            status='running',
-            started_at=timezone.now(),
-            expires_at=timezone.now() + timedelta(minutes=60),
-            generated_flags={}   # инициализируем пустой словарь
-        )
+        # 4. Отмечаем VM как запущенную
+        vm_instance.status = 'running'
+        vm_instance.started_at = timezone.now()
+        vm_instance.expires_at = timezone.now() + timedelta(minutes=60)
+        vm_instance.save()
 
         # === 5. Генерация уникальных флагов и вставка в файлы ===
         inserted_count = 0
@@ -162,10 +174,16 @@ def start_vm(request, task_id):
         print(f"[ERROR] start_vm: {str(e)}")
         messages.error(request, "Не удалось запустить виртуальную машину. Обратитесь к администратору.")
 
+        # Останавливаем ПЕРЕД удалением — Proxmox не даёт удалить запущенную VM,
+        # а именно в таком состоянии она обычно и оказывается на этом этапе.
         try:
+            proxmox_client.stop_vm(new_vm_id)
+            time.sleep(8)
             proxmox_client.destroy_vm(new_vm_id)
         except:
             pass
+
+        vm_instance.delete()
 
     return redirect('task_detail', task_id=task.id)
 
