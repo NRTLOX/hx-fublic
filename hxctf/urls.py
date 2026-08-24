@@ -14,5 +14,6 @@ urlpatterns = [
     path('vms/', include('vms.urls')),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Раздаём media (README, файлы заданий и т.д.) всегда, а не только при DEBUG.
+# Нет отдельного nginx перед media — раздачу берёт на себя сам Django.
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
