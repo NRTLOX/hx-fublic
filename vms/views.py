@@ -54,9 +54,12 @@ def generate_vm_id(user, task):
 
 @login_required
 def start_vm(request, task_id):
+    print(f"[VM][DEBUG] start_vm called: user={request.user.username} (id={request.user.id}) task_id={task_id}")
     task = get_object_or_404(Task, id=task_id, task_type='vm', is_active=True)
+    print(f"[VM][DEBUG] task found: {task.title} (template_id={task.proxmox_template_id})")
 
     if not task.is_visible_to(request.user):
+        print(f"[VM][DEBUG] EXIT: is_visible_to() = False")
         messages.error(request, "У вас нет доступа к этому заданию.")
         return redirect('task_list')
 
@@ -65,19 +68,25 @@ def start_vm(request, task_id):
     solved_flags = Submission.objects.filter(
         user=request.user, task=task, is_correct=True
     ).values_list('flag_id', flat=True).distinct().count()
+    print(f"[VM][DEBUG] total_flags={total_flags} solved_flags={solved_flags}")
     if total_flags > 0 and solved_flags == total_flags:
+        print(f"[VM][DEBUG] EXIT: все флаги уже сданы")
         messages.warning(request, "Задание уже полностью решено, запускать машину больше не нужно.")
         return redirect('task_detail', task_id=task.id)
 
     # Удаляем старую запись VM для этого пользователя и задания
-    UserVMInstance.objects.filter(user=request.user, task=task).delete()
+    deleted = UserVMInstance.objects.filter(user=request.user, task=task).delete()
+    print(f"[VM][DEBUG] удалили старые записи VM: {deleted}")
 
     ip_address = get_next_free_ip(request.user)
+    print(f"[VM][DEBUG] ip_address={ip_address}")
     if not ip_address:
+        print(f"[VM][DEBUG] EXIT: нет свободного IP")
         messages.error(request, "Все IP-адреса в твоей подсети заняты.")
         return redirect('task_detail', task_id=task.id)
 
     new_vm_id = generate_vm_id(request.user, task)
+    print(f"[VM][DEBUG] new_vm_id={new_vm_id}")
 
     # Резервируем строку (и тем самым IP) СРАЗУ, а не после долгого провижининга в Proxmox —
     # иначе повторный/параллельный запрос на запуск той же VM успевает выбрать тот же IP
@@ -92,12 +101,15 @@ def start_vm(request, task_id):
             status='stopped',  # временно, пока Proxmox не подтвердит запуск
             generated_flags={}
         )
-    except IntegrityError:
+        print(f"[VM][DEBUG] UserVMInstance создан: id={vm_instance.id}")
+    except IntegrityError as e:
+        print(f"[VM][DEBUG] EXIT: IntegrityError при создании UserVMInstance: {e}")
         messages.warning(request, "Машина уже запускается — подожди немного и обнови страницу.")
         return redirect('task_detail', task_id=task.id)
 
     try:
         # 1. Клонируем шаблон
+        print(f"[VM][DEBUG] вызываем proxmox_client.clone_vm({task.proxmox_template_id}, {new_vm_id})")
         proxmox_client.clone_vm(task.proxmox_template_id, new_vm_id)
 
         # 2. Устанавливаем IP
@@ -171,7 +183,9 @@ def start_vm(request, task_id):
         messages.success(request, success_msg)
 
     except Exception as e:
+        import traceback
         print(f"[ERROR] start_vm: {str(e)}")
+        traceback.print_exc()
         messages.error(request, "Не удалось запустить виртуальную машину. Обратитесь к администратору.")
 
         # Останавливаем ПЕРЕД удалением — Proxmox не даёт удалить запущенную VM,
@@ -180,8 +194,8 @@ def start_vm(request, task_id):
             proxmox_client.stop_vm(new_vm_id)
             time.sleep(8)
             proxmox_client.destroy_vm(new_vm_id)
-        except:
-            pass
+        except Exception as cleanup_e:
+            print(f"[VM][DEBUG] ошибка при stop/destroy после сбоя: {cleanup_e}")
 
         vm_instance.delete()
 
