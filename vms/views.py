@@ -209,8 +209,10 @@ def stop_and_destroy_vm(vm_instance):
         time.sleep(8)
         proxmox_client.destroy_vm(vm_instance.proxmox_vm_id)
 
-    vm_instance.status = 'destroyed'
-    vm_instance.save()
+    # Удаляем запись, а не просто помечаем destroyed — иначе её ip_address
+    # (он уникален глобально) навсегда блокирует повторное использование
+    # этого IP, даже для другого пользователя, унаследовавшего ту же подсеть.
+    vm_instance.delete()
 
 
 @login_required
