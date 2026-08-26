@@ -32,9 +32,10 @@ class Command(BaseCommand):
                     self.stdout.write(f"→ Уничтожаем VM {vm.proxmox_vm_id}...")
                     proxmox_client.destroy_vm(vm.proxmox_vm_id)
 
-                # Помечаем в базе как уничтоженную
-                vm.status = 'destroyed'
-                vm.save(update_fields=['status', 'updated_at'])
+                # Удаляем запись, а не помечаем destroyed — иначе её ip_address
+                # (уникален глобально) навсегда блокирует повторное использование
+                # этого IP, даже для другого пользователя с той же подсетью.
+                vm.delete()
 
                 count += 1
                 self.stdout.write(
