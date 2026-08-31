@@ -68,6 +68,15 @@ def register_view(request):
             # Подсеть будет назначена при первой генерации VPN конфига
             messages.success(request, 'Регистрация прошла успешно! Ожидайте одобрения администратора.')
             return redirect('login')
+        else:
+            # Форма невалидна (например, пароль не подходит по требованиям) —
+            # без этого пользователь не видит вообще никакой реакции: попап на
+            # сайте рисуется только через messages, а неоформленный form.as_p
+            # errorlist на тёмной теме практически не заметен.
+            for field_name, field_errors in form.errors.items():
+                label = form.fields[field_name].label if field_name in form.fields else None
+                for error in field_errors:
+                    messages.error(request, f"{label}: {error}" if label else error)
     else:
         form = CustomUserCreationForm()
     return render(request, 'core/register.html', {'form': form})
