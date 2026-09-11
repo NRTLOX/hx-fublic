@@ -1,0 +1,19 @@
+variables:
+  GIT_DEPTH: "0"     # gitleaks должен видеть всю историю коммитов
+
+stages:
+  - security
+
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
+  - template: Security/Dependency-Scanning.gitlab-ci.yml
+
+# отдельная явная джоба на gitleaks — встроенный Secret-Detection тоже неплох,
+# но продублируем тем же инструментом, что и в pre-commit локально, для согласованности результатов
+gitleaks-check:
+  stage: security
+  image: zricethezav/gitleaks:latest
+  script:
+    - gitleaks detect --source . --verbose --exit-code 1
+  allow_failure: true   # non-blocking на старте, пока не протриажено

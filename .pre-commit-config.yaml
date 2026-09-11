@@ -4,17 +4,4 @@ repos:
     hooks:
       - id: gitleaks
 
-  - repo: https://github.com/returntocorp/semgrep
-    rev: v1.78.0
-    hooks:
-      - id: semgrep
-        args: ['--config=auto', '--error']
 
-  - repo: local
-    hooks:
-      - id: trivy-fs
-        name: Trivy dependency scan
-        entry: trivy fs --severity HIGH,CRITICAL --exit-code 1 .
-        language: system
-        pass_filenames: false
-        stages: [pre-push]
