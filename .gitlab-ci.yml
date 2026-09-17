@@ -12,7 +12,9 @@ include:
 
 gitleaks-check:
   stage: security
-  image: zricethezav/gitleaks:latest
+  image:
+    name: zricethezav/gitleaks:latest
+    entrypoint: [""]
   script:
     - gitleaks detect --source . --verbose --exit-code 1
   allow_failure: true
